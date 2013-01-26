@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.4
+ * @version 0.0.5
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -92,12 +92,17 @@ if (jQuery) (function($) {
 		
 		// Destroy Zoomer
 		destroy: function() {
-			data.$target.removeClass("zoomer-element")
-						.data("zoomer", null);
-			data.$zoomer.remove();
-			
-			data.controls.$zoomIn.off(".zoomer");
-			data.controls.$zoomOut.off(".zoomer");
+			var $targets = $(this);
+			for (var i = 0, count = $targets.length; i < count; i++) {
+				var data = $targets.eq(i).data("zoomer");
+				
+				data.$target.removeClass("zoomer-element")
+							.data("zoomer", null);
+				data.$zoomer.remove();
+				
+				data.controls.$zoomIn.off(".zoomer");
+				data.controls.$zoomOut.off(".zoomer");
+			}
 			
 			$instances = $(".zoomer-element");
 			if ($instances.length < 1) {
@@ -497,7 +502,7 @@ if (jQuery) (function($) {
 	// Kill animation loop 
 	function _clearAnimation() {
 		if (animationId) {
-			clearTimout(animationId);
+			clearTimeout(animationId);
 			animationId = null;
 		}
 	}
