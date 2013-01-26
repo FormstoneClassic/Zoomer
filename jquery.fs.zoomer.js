@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.2
+ * @version 0.0.3
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -231,8 +231,6 @@ if (jQuery) (function($) {
 			data.targetImageWidth = data.minWidth;
 		}
 		
-		_setBounds(data);
-		
 		data.positionerLeft = data.targetPositionerLeft = data.centerLeft;
 		data.positionerTop = data.targetPositionerTop = data.centerTop;
 		
@@ -262,8 +260,6 @@ if (jQuery) (function($) {
 			var data = $instances.eq(i).data("zoomer");
 			
 			if (typeof data != "null") {
-				data.lastAction = data.action;
-				
 				// Handle zoom actions
 				if (data.action != "") {
 					// Calculate change
@@ -288,23 +284,6 @@ if (jQuery) (function($) {
 							data.targetImageWidth -= delta;
 							data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
 						}
-						
-						data.targetPositionerLeft += (data.positionerLeft < data.centerLeft) ? delta : -delta;
-						data.targetPositionerTop += (data.positionerTop < data.centerTop) ? delta : -delta;
-						
-						var checkLeft = (data.positionerLeft < data.centerLeft) ? "less" : "more";
-						var checkTop = (data.positionerTop < data.centerTop) ? "less" : "more";
-						
-						if (checkLeft == "less" && data.targetPositionerLeft > data.centerLeft) {
-							data.targetPositionerLeft = data.centerLeft;
-						} else if (checkLeft == "more" && data.targetPositionerLeft < data.centerLeft) {
-							data.targetPositionerLeft = data.centerleft;
-						}
-						if (checkTop == "less" && data.targetPositionerTop > data.centerTop) {
-							data.targetPositionerTop = data.centerTop;
-						} else if (checkTop == "more" && data.targetPositionerTop < data.centerTop) {
-							data.targetPositionerTop = data.centerTop;
-						}
 					}
 					
 					// Check min and max 
@@ -326,6 +305,30 @@ if (jQuery) (function($) {
 						}
 					}
 				}
+				
+				if (data.action == "zoom_out" || data.lastAction == "zoom_out") {
+					data.targetPositionerLeft += (data.positionerLeft < data.centerLeft) ? 5 : -5;
+					data.targetPositionerTop += (data.positionerTop < data.centerTop) ? 5 : -5;
+					
+					var checkLeft = (data.positionerLeft < data.centerLeft) ? "less" : "more";
+					var checkTop = (data.positionerTop < data.centerTop) ? "less" : "more";
+					
+					if ( (checkLeft == "less" && data.targetPositionerLeft > data.centerLeft) ||
+						 (checkLeft == "more" && data.targetPositionerLeft < data.centerLeft) ) {
+						data.targetPositionerLeft = data.centerLeft;
+						data.targetPositionerLeft = data.centerleft;
+					}
+					if ( (checkTop == "less" && data.targetPositionerTop > data.centerTop) || 
+						 (checkTop == "more" && data.targetPositionerTop < data.centerTop) ) {
+						data.targetPositionerTop = data.centerTop;
+					}
+				}
+				
+				// SET BOUNDS
+				data.boundsTop = data.centerTop - (data.targetImageHeight / 2);
+				data.boundsBottom = data.centerTop + (data.targetImageHeight / 2);
+				data.boundsLeft = data.centerLeft - (data.targetImageWidth / 2);
+				data.boundsRight = data.centerLeft + (data.targetImageWidth / 2);
 				
 				if (data.imageWidth != data.targetImageWidth || data.positionLeft != data.targetPositionerLeft) {
 					// Check if big enough to drag
@@ -380,6 +383,8 @@ if (jQuery) (function($) {
 						width: data.imageWidth
 					});
 				}
+				
+				data.lastAction = data.action;
 			}
 		}
 	}
@@ -413,11 +418,6 @@ if (jQuery) (function($) {
 		var data = e.data;
 		data.action = "drag";
 		
-		console.log(data.boundsLeft, data.boundsRight, data.boundsTop, data.boundsBottom);
-		_setBounds(data);
-		console.log(data.boundsLeft, data.boundsRight, data.boundsTop, data.boundsBottom, data.centerLeft);
-		console.log("---");
-		
 		data.mouseX = e.pageX;
 		data.mouseY = e.pageY;
 		
@@ -448,14 +448,6 @@ if (jQuery) (function($) {
 		
 		data.mouseX = e.pageX;
 		data.mouseY = e.pageY;
-	}
-	
-	// Set dragging bounds
-	function _setBounds(data) {
-		data.boundsTop = data.centerTop - (data.imageHeight / 2);
-		data.boundsBottom = data.centerTop + (data.imageHeight / 2);
-		data.boundsLeft = data.centerLeft - (data.imageWidth / 2);
-		data.boundsRight = data.centerLeft + (data.imageWidth / 2);
 	}
 	
 	function _setMinimums(data) {
