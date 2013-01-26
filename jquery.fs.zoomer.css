@@ -1,0 +1,31 @@
+/*
+ * Zoomer [Formstone Library]
+ * @author Ben Plum
+ * @version 0.0.1
+ *
+ * Copyright © 2012 Ben Plum <mr@benplum.com>
+ * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
+ */
+ 
+	.zoomer { background-color: #eee; height: 100%; overflow: hidden; position: relative; width: 100%; 
+		-webkit-transition: none;
+		   -moz-transition: none;
+		   	-ms-transition: none;
+		   	 -o-transition: none;
+		   	 	transition: none;
+	}
+	.zoomer .zoomer-positioner { margin: 0; height: 1px; position: absolute; width: 1px; }
+	.zoomer .zoomer-holder { position: relative; 
+		-webkit-transition: none;
+		   -moz-transition: none;
+		   	-ms-transition: none;
+		   	 -o-transition: none;
+		   	 	transition: none;
+	}
+	.zoomer .zoomer-image { box-shadow: 0 0 3px rgba(0, 0, 0, 0.5); cursor: move; float: left; height: 100%; width: 100%; 
+		-webkit-user-select: none;
+		   -moz-user-select: none;
+		    -ms-user-select: none;
+		     -o-user-select: none;
+		        user-select: none;
+	}
