@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.3
+ * @version 0.0.4
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -17,16 +17,19 @@ if (jQuery) (function($) {
 			$zoomOut: $()
 		},
 		customClass: "",
-		retina: false
+		margin: 100,
+		retina: false,
+		source: null
 	};
 	
 	// Internal data
 	var properties = {
-		animationInterval: 0.2,
+		animationInterval: 0.2, // ~smoothness - 0.1 = butter, 0.99 = sandpaper
 		
 		action: "",
 		lastAction: "",
 		keyDownTime: 0,
+		keyDownIncrement: 0.05, // ~speed - 0.1 = hare, 0.001 = tortoise 
 		
 		// Frame 
 		centerLeft: 0,
@@ -39,7 +42,7 @@ if (jQuery) (function($) {
 		minWidth: null,
 		maxHeight: 0,
 		maxWidth: 0,
-		padding: (100 * 2),
+		marginReal: 0,
 		
 		// Original image
 		originalHeight: 0,
@@ -163,7 +166,7 @@ if (jQuery) (function($) {
 		data.$target = $(this);
 		
 		// Assemble HTML
-		data.$zoomer = $('<div class="zoomer" class="' + options.customClass + '"><div class="zoomer-positioner"><div class="zoomer-holder"></div></div></div>');
+		data.$zoomer = $('<div class="zoomer ' + data.customClass + '"><div class="zoomer-positioner"><div class="zoomer-holder"></div></div></div>');
 		data.$target.addClass("zoomer-element")
 					.append(data.$zoomer);
 		
@@ -179,6 +182,8 @@ if (jQuery) (function($) {
 							 .on("mouseup.zoomer", data, _clearZoom);
 		data.controls.$zoomOut.on("mousedown.zoomer", data, _zoomOut)
 							  .on("mouseup.zoomer", data, _clearZoom);
+		
+		data.marginReal = data.margin * 2;
 		
 		// Kick it off
 		data.$target.data("zoomer", data);
@@ -225,7 +230,7 @@ if (jQuery) (function($) {
 		data.imageRatioTall = data.originalHeight / data.originalWidth;
 		
 		// Initial sizing to fit screen
-		if (data.originalHeight > (data.frameHeight - data.padding) || data.originalWidth > (data.frameWidth - data.padding)) {
+		if (data.originalHeight > (data.frameHeight - data.marginReal) || data.originalWidth > (data.frameWidth - data.marginReal)) {
 			_setMinimums(data);
 			data.targetImageHeight = data.minHeight;
 			data.targetImageWidth = data.minWidth;
@@ -263,7 +268,7 @@ if (jQuery) (function($) {
 				// Handle zoom actions
 				if (data.action != "") {
 					// Calculate change
-					data.keyDownTime += 0.025;
+					data.keyDownTime += data.keyDownIncrement;
 					var delta = (data.imageWidth * data.keyDownTime) - data.imageWidth;
 					
 					if (data.action == "zoom_in") {
@@ -306,6 +311,7 @@ if (jQuery) (function($) {
 					}
 				}
 				
+				// Recenting when image is too small
 				if (data.action == "zoom_out" || data.lastAction == "zoom_out") {
 					data.targetPositionerLeft += (data.positionerLeft < data.centerLeft) ? 5 : -5;
 					data.targetPositionerTop += (data.positionerTop < data.centerTop) ? 5 : -5;
@@ -324,7 +330,7 @@ if (jQuery) (function($) {
 					}
 				}
 				
-				// SET BOUNDS
+				// Set bounds
 				data.boundsTop = data.centerTop - (data.targetImageHeight / 2);
 				data.boundsBottom = data.centerTop + (data.targetImageHeight / 2);
 				data.boundsLeft = data.centerLeft - (data.targetImageWidth / 2);
@@ -455,11 +461,11 @@ if (jQuery) (function($) {
 			// Tall
 			data.aspect = "tall";
 			
-			data.minHeight = data.frameHeight - data.padding;
+			data.minHeight = data.frameHeight - data.marginReal;
 			data.minWidth = data.minHeight / data.imageRatioTall;
 			
-			if (data.minWidth > (data.frameWidth - data.padding)) {
-				data.minWidth = data.frameWidth - data.padding;
+			if (data.minWidth > (data.frameWidth - data.marginReal)) {
+				data.minWidth = data.frameWidth - data.marginReal;
 				data.minHeight = data.minWidth / data.imageRatioWide;
 			}
 			
@@ -468,11 +474,11 @@ if (jQuery) (function($) {
 			// Wide
 			data.aspect = "wide";
 			
-			data.minWidth = data.frameWidth - data.padding;
+			data.minWidth = data.frameWidth - data.marginReal;
 			data.minHeight = data.minWidth / data.imageRatioWide;
 			
-			if (data.minHeight > (data.frameHeight - data.padding)) {
-				data.minHeight = data.frameHeight - data.padding;
+			if (data.minHeight > (data.frameHeight - data.marginReal)) {
+				data.minHeight = data.frameHeight - data.marginReal;
 				data.minWidth = data.minHeight / data.imageRatioTall;
 			}
 			
