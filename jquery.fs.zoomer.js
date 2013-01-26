@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.5.1
+ * @version 0.0.6
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -92,9 +92,8 @@ if (jQuery) (function($) {
 		
 		// Destroy Zoomer
 		destroy: function() {
-			var $targets = $(this);
-			for (var i = 0, count = $targets.length; i < count; i++) {
-				var data = $targets.eq(i).data("zoomer");
+			$(this).each(function() {
+				var data = $(this).data("zoomer");
 				
 				data.$target.removeClass("zoomer-element")
 							.data("zoomer", null);
@@ -103,21 +102,20 @@ if (jQuery) (function($) {
 				
 				data.controls.$zoomIn.off(".zoomer");
 				data.controls.$zoomOut.off(".zoomer");
-			}
+			});
 			
 			$instances = $(".zoomer-element");
 			if ($instances.length < 1) {
 				_clearAnimation();
 			}
 			
-			return $targets;
+			return $(this);
 		},
 		
 		// Load new image
 		load: function(source) {
-			var $targets = $(this);
-			for (var i = 0, count = $targets.length; i < count; i++) {
-				var data = $targets.eq(i).data("zoomer");
+			return $(this).each(function() {
+				var data = $(this).data("zoomer");
 				
 				if (typeof data.$image != "undefined") {
 					data.$image.animate({ opacity: 0 }, data.animationSpeed, function() {
@@ -127,16 +125,13 @@ if (jQuery) (function($) {
 				} else {
 					_loadImage.apply(data.$target, [ data, source ]);
 				}
-			}
-			
-			return $targets;
+			});
 		},
 		
 		// Resize zoomer
 		resize: function() {
-			var $targets = $(this);
-			for (var i = 0, count = $targets.length; i < count; i++) {
-				var data = $targets.eq(i).data("zoomer");
+			return $(this).each(function() {
+				var data = $(this).data("zoomer");
 				
 				if (typeof data.$target != 'undefined') {
 					data.frameWidth = data.$target.outerWidth();
@@ -146,23 +141,18 @@ if (jQuery) (function($) {
 					
 					_setMinimums(data);
 				}
-			}
-			
-			return $targets;
+			});
 		},
 		
 		// Unload image
 		unload: function() {
-			var $targets = $(this);
-			for (var i = 0, count = $targets.length; i < count; i++) {
-				var data = $targets.eq(i).data("zoomer");
+			return $(this).each(function() {
+				var data = $(this).data("zoomer");
 				
 				if (typeof data.$target != 'undefined') {
 					data.$image.remove();
 				}
-			}
-			
-			return $targets;
+			});
 		}
 	};
 	
