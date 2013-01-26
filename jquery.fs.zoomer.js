@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.1
+ * @version 0.0.2
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -35,8 +35,8 @@ if (jQuery) (function($) {
 		frameWidth: 0,
 		
 		// Bounds
-		minHeight: 100,
-		minWidth: 100,
+		minHeight: null,
+		minWidth: null,
 		maxHeight: 0,
 		maxWidth: 0,
 		padding: (100 * 2),
@@ -76,9 +76,7 @@ if (jQuery) (function($) {
 	
 	// Internal Data
 	var animationId = null,
-		iData = {
-			instances: []
-		};
+		$instances;
 	
 	// Public Methods
 	var pub = {
@@ -98,7 +96,10 @@ if (jQuery) (function($) {
 			data.controls.$zoomIn.off(".zoomer");
 			data.controls.$zoomOut.off(".zoomer");
 			
-			_clearAnimation();
+			$instances = $(".zoomer-element");
+			if ($instances.length < 1) {
+				_clearAnimation();
+			}
 			
 			return $(this).off(".zoomer");
 		},
@@ -126,6 +127,8 @@ if (jQuery) (function($) {
 				data.frameHeight = data.$target.outerHeight();
 				data.centerLeft = data.frameWidth / 2;
 				data.centerTop = data.frameHeight / 2;
+				
+				_setMinimums(data);
 			}
 		},
 		
@@ -143,6 +146,20 @@ if (jQuery) (function($) {
 	function _init(opts) {
 		var data = $.extend({}, options, properties, opts);
 		
+		var $targets = $(this);
+		for (var i = 0, count = $targets.length; i < count; i++) {
+			_build.apply($targets.eq(i), [ $.extend({}, data) ]);
+		}
+		
+		// kick it off
+		$instances = $(".zoomer-element");
+		_startAnimation();
+		
+		// Maintain chainability
+		return $targets;
+	}
+	
+	function _build(data) {
 		data.$target = $(this);
 		
 		// Assemble HTML
@@ -170,11 +187,6 @@ if (jQuery) (function($) {
 		if (data.source) {
 			pub.load.apply(data.$target, [ data.source ]);
 		}
-		
-		_startAnimation();
-		
-		// Maintain chainability
-		return data.$target;
 	}
 	
 	function _loadImage(data, source) {
@@ -214,44 +226,9 @@ if (jQuery) (function($) {
 		
 		// Initial sizing to fit screen
 		if (data.originalHeight > (data.frameHeight - data.padding) || data.originalWidth > (data.frameWidth - data.padding)) {
-			if (data.originalHeight > data.originalWidth) {
-				// Tall
-				data.aspect = "tall";
-				
-				data.targetImageHeight = data.frameHeight - data.padding;
-				data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
-				
-				if (data.targetImageWidth > (data.frameWidth - data.padding)) {
-					data.imageRatio = imageHolder.width / imageHolder.height;
-					data.targetImageWidth = data.frameWidth - data.padding;
-					data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
-				}
-				
-				data.minWidth = data.minHeight / data.imageRatioTall;
-				data.step = (data.maxWidth - data.minWidth) / 100;
-			} else {
-				// Wide
-				data.aspect = "wide";
-				
-				data.targetImageWidth = data.frameWidth - data.padding;
-				data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
-				
-				if(data.targetImageHeight > (data.frameHeight - data.padding)) {
-					data.targetImageHeight = data.frameHeight - data.padding;
-					data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
-				}
-				
-				data.minHeight = data.minWidth / data.imageRatioWide;
-				data.step = (data.maxHeight - data.minHeight) / 100;
-			}
-		}
-		
-		
-		if (data.originalWidth < data.minWidth) {
-			data.minWidth = data.originalWidth;
-		}
-		if (data.originalHeight < data.minHeight) {
-			data.minHeight = data.originalHeight;
+			_setMinimums(data);
+			data.targetImageHeight = data.minHeight;
+			data.targetImageWidth = data.minWidth;
 		}
 		
 		_setBounds(data);
@@ -281,9 +258,8 @@ if (jQuery) (function($) {
 	}
 	
 	function _render() {
-		iData.$instances = $(".zoomer-element");
-		for (var i = 0, count = iData.$instances.length; i < count; i++) {
-			var data = iData.$instances.eq(i).data("zoomer");
+		for (var i = 0, count = $instances.length; i < count; i++) {
+			var data = $instances.eq(i).data("zoomer");
 			
 			if (typeof data != "null") {
 				data.lastAction = data.action;
@@ -480,6 +456,36 @@ if (jQuery) (function($) {
 		data.boundsBottom = data.centerTop + (data.imageHeight / 2);
 		data.boundsLeft = data.centerLeft - (data.imageWidth / 2);
 		data.boundsRight = data.centerLeft + (data.imageWidth / 2);
+	}
+	
+	function _setMinimums(data) {
+		if (data.originalHeight > data.originalWidth) {
+			// Tall
+			data.aspect = "tall";
+			
+			data.minHeight = data.frameHeight - data.padding;
+			data.minWidth = data.minHeight / data.imageRatioTall;
+			
+			if (data.minWidth > (data.frameWidth - data.padding)) {
+				data.minWidth = data.frameWidth - data.padding;
+				data.minHeight = data.minWidth / data.imageRatioWide;
+			}
+			
+			data.step = (data.maxWidth - data.minWidth) / 100;
+		} else {
+			// Wide
+			data.aspect = "wide";
+			
+			data.minWidth = data.frameWidth - data.padding;
+			data.minHeight = data.minWidth / data.imageRatioWide;
+			
+			if (data.minHeight > (data.frameHeight - data.padding)) {
+				data.minHeight = data.frameHeight - data.padding;
+				data.minWidth = data.minHeight / data.imageRatioTall;
+			}
+			
+			data.step = (data.maxHeight - data.minHeight) / 100;
+		}
 	}
 	
 	
