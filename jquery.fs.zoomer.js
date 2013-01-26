@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.5
+ * @version 0.0.5.1
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -98,6 +98,7 @@ if (jQuery) (function($) {
 				
 				data.$target.removeClass("zoomer-element")
 							.data("zoomer", null);
+				data.$holder.off(".zoomer");
 				data.$zoomer.remove();
 				
 				data.controls.$zoomIn.off(".zoomer");
@@ -109,44 +110,59 @@ if (jQuery) (function($) {
 				_clearAnimation();
 			}
 			
-			return $(this).off(".zoomer");
+			return $targets;
 		},
 		
 		// Load new image
 		load: function(source) {
-			var data = $(this).data("zoomer");
-			
-			if (typeof data.$image != "undefined") {
-				data.$image.animate({ opacity: 0 }, data.animationSpeed, function() {
-					pub.unload.apply(data.$target);
+			var $targets = $(this);
+			for (var i = 0, count = $targets.length; i < count; i++) {
+				var data = $targets.eq(i).data("zoomer");
+				
+				if (typeof data.$image != "undefined") {
+					data.$image.animate({ opacity: 0 }, data.animationSpeed, function() {
+						pub.unload.apply(data.$target);
+						_loadImage.apply(data.$target, [ data, source ]);
+					});
+				} else {
 					_loadImage.apply(data.$target, [ data, source ]);
-				});
-			} else {
-				_loadImage.apply(data.$target, [ data, source ]);
+				}
 			}
+			
+			return $targets;
 		},
 		
 		// Resize zoomer
 		resize: function() {
-			var data = $(this).data("zoomer");
-			
-			if (typeof data.$target != 'undefined') {
-				data.frameWidth = data.$target.outerWidth();
-				data.frameHeight = data.$target.outerHeight();
-				data.centerLeft = data.frameWidth / 2;
-				data.centerTop = data.frameHeight / 2;
+			var $targets = $(this);
+			for (var i = 0, count = $targets.length; i < count; i++) {
+				var data = $targets.eq(i).data("zoomer");
 				
-				_setMinimums(data);
+				if (typeof data.$target != 'undefined') {
+					data.frameWidth = data.$target.outerWidth();
+					data.frameHeight = data.$target.outerHeight();
+					data.centerLeft = data.frameWidth / 2;
+					data.centerTop = data.frameHeight / 2;
+					
+					_setMinimums(data);
+				}
 			}
+			
+			return $targets;
 		},
 		
 		// Unload image
 		unload: function() {
-			var data = $(this).data("zoomer");
-			
-			if (typeof data.$target != 'undefined') {
-				data.$image.remove();
+			var $targets = $(this);
+			for (var i = 0, count = $targets.length; i < count; i++) {
+				var data = $targets.eq(i).data("zoomer");
+				
+				if (typeof data.$target != 'undefined') {
+					data.$image.remove();
+				}
 			}
+			
+			return $targets;
 		}
 	};
 	
