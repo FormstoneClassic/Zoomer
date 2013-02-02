@@ -1,0 +1,30 @@
+{
+	"name": "zoomer",
+	"title": "Zoomer",
+	"description": "A jQuery plugin for smooth image exploration.",
+	"keywords": [
+		"image",
+		"zoom",
+		"ui",
+		"formstone",
+		"benplum"
+	],
+	"version": "0.1.0",
+	"author": {
+		"name": "Ben Plum",
+		"url": "http://www.benplum.com"
+	},
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "http://www.opensource.org/licenses/mit-license.php"
+		}
+	],
+	"docs": "http://www.benplum.com/formstone/zoomer/",
+	"demo": "http://www.benplum.com/formstone/zoomer/",
+	"download": "https://github.com/benplum/Zoomer",
+	"bugs": "https://github.com/benplum/Zoomer/issues",
+	"dependencies": {
+		"jquery": ">=1.7"
+	}
+}

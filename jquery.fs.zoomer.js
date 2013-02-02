@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.0.7
+ * @version 0.1.0
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -11,12 +11,14 @@ if (jQuery) (function($) {
 	
 	// Default Options
 	var options = {
-		animationSpeed: 300,
 		controls: {
-			$zoomIn: $(),
-			$zoomOut: $()
+			position: "bottom",
+			$zoomIn: null,
+			$zoomOut: null
 		},
 		customClass: "",
+		increment: 0.05, // ~speed - 0.1 = hare, 0.01 = tortoise 
+		interval: 0.2, // ~smoothness - 0.1 = butter, 0.9 = sandpaper
 		margin: 100,
 		retina: false,
 		source: null
@@ -24,12 +26,9 @@ if (jQuery) (function($) {
 	
 	// Internal data
 	var properties = {
-		animationInterval: 0.2, // ~smoothness - 0.1 = butter, 0.99 = sandpaper
-		
 		action: "",
 		lastAction: "",
 		keyDownTime: 0,
-		keyDownIncrement: 0.05, // ~speed - 0.1 = hare, 0.001 = tortoise 
 		
 		// Frame 
 		centerLeft: 0,
@@ -118,7 +117,7 @@ if (jQuery) (function($) {
 				var data = $(this).data("zoomer");
 				
 				if (typeof data.$image != "undefined") {
-					data.$image.animate({ opacity: 0 }, data.animationSpeed, function() {
+					data.$image.animate({ opacity: 0 }, 300, function() {
 						pub.unload.apply(data.$target);
 						_loadImage.apply(data.$target, [ data, source ]);
 					});
@@ -152,6 +151,9 @@ if (jQuery) (function($) {
 				if (typeof data.$image != 'undefined') {
 					data.$image.remove();
 				}
+				if (typeof data.controls.$default != 'undefined') {
+					data.controls.$default.removeClass("active");
+				}
 			});
 		}
 	};
@@ -180,6 +182,14 @@ if (jQuery) (function($) {
 		data.$zoomer = $('<div class="zoomer ' + data.customClass + '"><div class="zoomer-positioner"><div class="zoomer-holder"></div></div></div>');
 		data.$target.addClass("zoomer-element")
 					.append(data.$zoomer);
+		
+		if (!data.controls.$zoomIn && !data.controls.$zoomOut) {
+			data.$zoomer.append('<div class="zoomer-controls zoomer-controls-' + data.controls.position + '"><span class="zoomer-zoom-out">-</span><span class="zoomer-zoom-in">+</span></div>');
+			
+			data.controls.$default = data.$zoomer.find(".zoomer-controls");
+			data.controls.$zoomIn = data.$zoomer.find(".zoomer-zoom-in");
+			data.controls.$zoomOut = data.$zoomer.find(".zoomer-zoom-out");
+		}
 		
 		// Cache jquery objects
 		data.$positioner = data.$zoomer.find(".zoomer-positioner");
@@ -268,7 +278,11 @@ if (jQuery) (function($) {
 		}).append(data.$image)
 		  .on("mousedown.zoomer", data, _dragStart);
 		
-		data.$image.animate({ opacity: 1 }, data.animationSpeed);
+		if (typeof data.controls.$default != 'undefined') {
+			data.controls.$default.addClass("active");
+		}
+		
+		data.$image.animate({ opacity: 1 }, 300);
 	}
 	
 	function _render() {
@@ -279,7 +293,7 @@ if (jQuery) (function($) {
 				// Handle zoom actions
 				if (data.action != "") {
 					// Calculate change
-					data.keyDownTime += data.keyDownIncrement;
+					data.keyDownTime += data.increment;
 					var delta = (data.imageWidth * data.keyDownTime) - data.imageWidth;
 					
 					if (data.action == "zoom_in") {
@@ -374,14 +388,14 @@ if (jQuery) (function($) {
 					data.targetImageTop = -data.targetImageHeight / 2;
 					data.targetImageLeft = -data.targetImageWidth / 2;
 					
-					data.imageWidth += (data.targetImageWidth - data.imageWidth) * data.animationInterval;
-					data.imageHeight += (data.targetImageHeight - data.imageHeight) * data.animationInterval;
-					data.imageLeft += (data.targetImageLeft - data.imageLeft) * data.animationInterval;
-					data.imageTop += (data.targetImageTop - data.imageTop) * data.animationInterval;
+					data.imageWidth += (data.targetImageWidth - data.imageWidth) * data.interval;
+					data.imageHeight += (data.targetImageHeight - data.imageHeight) * data.interval;
+					data.imageLeft += (data.targetImageLeft - data.imageLeft) * data.interval;
+					data.imageTop += (data.targetImageTop - data.imageTop) * data.interval;
 					
 					if (data.action != "drag") {
-						data.positionerLeft += (data.targetPositionerLeft - data.positionerLeft) * data.animationInterval;
-						data.positionerTop += (data.targetPositionerTop - data.positionerTop) * data.animationInterval;
+						data.positionerLeft += (data.targetPositionerLeft - data.positionerLeft) * data.interval;
+						data.positionerTop += (data.targetPositionerTop - data.positionerTop) * data.interval;
 					} else {
 						data.positionerLeft = data.targetPositionerLeft;
 						data.positionerTop = data.targetPositionerTop;
@@ -519,29 +533,6 @@ if (jQuery) (function($) {
 		animationId = setTimeout(_onAnimate, 28);
 		_render();
 	}
-	/*
-	// using requestAnimationFrame - EXPERIMENTAL & BUGGY!
-	// Start animation loop
-	function _startAnimation() {
-		if (!animationId) {
-			_onAnimate();
-		}
-	}
-	
-	// Kill animation loop 
-	function _clearAnimation() {
-		if (animationId) {
-			window.cancelAnimationFrame(animationId);
-			animationId = undefined;
-		}
-	}
-	
-	// Handle animation loop
-	function _onAnimate() {
-		animationId = requestAnimationFrame(_onAnimate);
-		_render();
-	}
-	*/
 	
 	// Define Plugin
 	$.fn.zoomer = function(method) {
@@ -553,37 +544,3 @@ if (jQuery) (function($) {
 		return this;	
 	};
 })(jQuery);
-
-// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-// requestAnimationFrame polyfill by Erik Möller
-// fixes from Paul Irish and Tino Zijdel
-/*
-(function() {
-	var lastTime = 0;
-	var vendors = ['ms', 'moz', 'webkit', 'o'];
-	for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-		window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-		window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-	}
-	
-	if (!window.requestAnimationFrame) {
-		window.requestAnimationFrame = function(callback, element) {
-			var currTime = new Date().getTime();
-			var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-			var id = window.setTimeout(function() { 
-				callback(currTime + timeToCall); 
-			}, timeToCall);
-			
-			lastTime = currTime + timeToCall;
-			return id;
-		};
-	}
-	
-	if (!window.cancelAnimationFrame) {
-		window.cancelAnimationFrame = function(id) {
-			clearTimeout(id);
-		};
-	}
-}());
-*/
