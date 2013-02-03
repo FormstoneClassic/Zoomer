@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.1.1
+ * @version 0.1.2
  *
  * Copyright © 2012 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -13,8 +13,8 @@ if (jQuery) (function($) {
 	var options = {
 		controls: {
 			position: "bottom",
-			$zoomIn: null,
-			$zoomOut: null
+			zoomIn: null,
+			zoomOut: null
 		},
 		customClass: "",
 		increment: 0.05, // ~speed - 0.1 = hare, 0.01 = tortoise 
@@ -183,7 +183,10 @@ if (jQuery) (function($) {
 		data.$target.addClass("zoomer-element")
 					.append(data.$zoomer);
 		
-		if (!data.controls.$zoomIn && !data.controls.$zoomOut) {
+		if (data.controls.zoomIn && data.controls.zoomOut) {
+			data.controls.$zoomIn = $(data.controls.zoomIn);
+			data.controls.$zoomOut = $(data.controls.zoomOut);
+		} else {
 			data.$zoomer.append('<div class="zoomer-controls zoomer-controls-' + data.controls.position + '"><span class="zoomer-zoom-out">-</span><span class="zoomer-zoom-in">+</span></div>');
 			
 			data.controls.$default = data.$zoomer.find(".zoomer-controls");
