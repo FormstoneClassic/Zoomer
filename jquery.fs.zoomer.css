@@ -41,7 +41,6 @@
 	}
 	.zoomer .zoomer-controls.active { opacity: 1; }
 	.zoomer .zoomer-controls span { border-radius: 3px; color: #fff; cursor: pointer; display: block; font-size: 20px; font-weight: bold; height: 30px; line-height: 30px; margin: 0; text-align: center; width: 30px; }
-	.zoomer .zoomer-controls span:hover { background: #000; }
 	
 	/* CONTROLS - TOP, BOTTOM */
 	.zoomer .zoomer-controls-top,
@@ -72,3 +71,7 @@
 	.zoomer .zoomer-controls-right { right: 10px; }
 	.zoomer .zoomer-controls-top-right { right: 10px; top: 10px; }
 	.zoomer .zoomer-controls-bottom-right { bottom: 10px; right: 10px; }
+	
+	@media screen and (min-width: 740px) { 
+		.zoomer .zoomer-controls span:hover { background: #000; }
+	}
