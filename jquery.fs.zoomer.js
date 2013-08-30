@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.2.1
+ * @version 0.2.2
  *
  * Copyright © 2013 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -19,12 +19,12 @@ if (jQuery) (function($) {
 			previous: null
 		},
 		customClass: "",
-		enertia: 0.2, // ~smoothness - 0.1 = butter, 0.9 = sandpaper
-		increment: 0.01, // ~speed - 0.1 = hare, 0.01 = tortoise 
+		enertia: 0.2, // ~Smoothing - 0.1 = butter, 0.9 = sandpaper
+		increment: 0.01, // ~Speed - 0.1 = hare, 0.01 = tortoise 
 		marginMin: 30, // Min bounds
 		marginMax: 100, // Max bounds
 		retina: false,
-		source: []
+		source: ""
 	};
 	
 	// Internal data
@@ -35,6 +35,7 @@ if (jQuery) (function($) {
 		lastAction: "",
 		keyDownTime: 0,
 		marginReal: 0,
+		originalDOM: "",
 		
 		// Gallery
 		gallery: false,
@@ -129,7 +130,7 @@ if (jQuery) (function($) {
 		
 		// Destroy Zoomer
 		destroy: function() {
-			$(this).each(function() {
+			var $targets = $(this).each(function() {
 				var data = $(this).data("zoomer");
 				
 				$(window).off(".zoomer");
@@ -143,7 +144,7 @@ if (jQuery) (function($) {
 				data.$target.removeClass("zoomer-element")
 							.data("zoomer", null)
 							.empty()
-							.append(data.$originalDOM);
+							.append(data.originalDOM);
 			});
 			
 			$instances = $(".zoomer-element");
@@ -151,7 +152,7 @@ if (jQuery) (function($) {
 				_clearAnimation();
 			}
 			
-			return $(this);
+			return $targets;
 		},
 		
 		// Load new image
@@ -173,10 +174,10 @@ if (jQuery) (function($) {
 				var data = $(this).data("zoomer");
 				
 				if (typeof data != 'undefined') {
-					data.frameWidth = data.$target.outerWidth();
+					data.frameWidth  = data.$target.outerWidth();
 					data.frameHeight = data.$target.outerHeight();
-					data.centerLeft = data.frameWidth * 0.5;
-					data.centerTop = data.frameHeight * 0.5;
+					data.centerLeft  = Math.round(data.frameWidth * 0.5);
+					data.centerTop   = Math.round(data.frameHeight * 0.5);
 					
 					_setMinimums(data);
 				}
@@ -204,6 +205,8 @@ if (jQuery) (function($) {
 			_build.apply($targets.eq(i), [ $.extend({}, data) ]);
 		}
 		
+		pub.resize.apply($targets);
+		
 		// kick it off
 		$instances = $(".zoomer-element");
 		_startAnimation();
@@ -217,7 +220,7 @@ if (jQuery) (function($) {
 		data.$target = $(this);
 		
 		data.marginReal = data.marginMin * 2;
-		data.$originalDOM = $(data.$target.html());
+		data.originalDOM = data.$target.html();
 		
 		if (data.$target.find("img").length > 0) {
 			data.source = [];
@@ -246,7 +249,6 @@ if (jQuery) (function($) {
 			data.controls.$next = $(data.controls.next);
 			data.controls.$previous = $(data.controls.previous);
 		} else {
-			
 			html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
 			html += '<span class="zoomer-previous">&lsaquo;</span>';
 			html += '<span class="zoomer-zoom-out">-</span>';
@@ -281,33 +283,12 @@ if (jQuery) (function($) {
 		
 		// Kick it off
 		data.$target.data("zoomer", data);
-		pub.resize.apply(data.$target);
 		
 		if (data.images.length > 0) {
 			_load.apply(data.$target, [ data ]);
 		}
 	}
-	
-	// Gallery next
-	function _nextImage(e) {
-		var data = e.data;
 		
-		if (!data.loading && data.index+1 < data.images.length) {
-			data.index++;
-			_load.apply(data.$target, [ data ]);
-		}
-	}
-	
-	// Gallery previous
-	function _previousImage(e) {
-		var data = e.data;
-		
-		if (!data.loading && data.index-1 >= 0) {
-			data.index--;
-			_load.apply(data.$target, [ data ]);
-		}
-	}
-	
 	// Route loading action
 	function _load(data) {
 		// If gallery
@@ -379,20 +360,6 @@ if (jQuery) (function($) {
 			data.tiledHeight = data.$tiles.eq(0)[0].naturalHeight * data.tiledRows;
 			data.tiledWidth = data.$tiles.eq(0)[0].naturalWidth * data.tiledColumns;
 			
-			/*
-			// Irregular cells?
-			for (var i in data.images[0]) {
-				// Add height
-				data.tiledHeight += data.$image.filter("[data-zoomer-tile=" + i + "-0]")[0].naturalHeight;
-				if (i == 0) {
-					// Add width for first row only
-					for (var j in data.images[0][i]) {
-						data.tiledWidth += data.$image.filter("[data-zoomer-tile=" + i + "-" + j + "]")[0].naturalWidth;
-					}
-				}
-			}
-			*/
-			
 			_onImageLoad({ data: data });
 		}
 	}
@@ -403,10 +370,10 @@ if (jQuery) (function($) {
 		
 		if (data.tiled) {
 			data.naturalHeight = data.tiledHeight;
-			data.naturalWidth = data.tiledWidth;
+			data.naturalWidth  = data.tiledWidth;
 		} else {
 			data.naturalHeight = data.$image[0].naturalHeight;
-			data.naturalWidth = data.$image[0].naturalWidth;
+			data.naturalWidth  = data.$image[0].naturalWidth;
 		}
 		
 		if (data.retina) {
@@ -415,10 +382,10 @@ if (jQuery) (function($) {
 		}
 		
 		data.targetImageHeight = data.naturalHeight;
-		data.targetImageWidth = data.naturalWidth;
+		data.targetImageWidth  = data.naturalWidth;
 		
 		data.maxHeight = data.naturalHeight;
-		data.maxWidth = data.naturalWidth;
+		data.maxWidth  = data.naturalWidth;
 		
 		data.imageRatioWide = data.naturalWidth / data.naturalHeight;
 		data.imageRatioTall = data.naturalHeight / data.naturalWidth;
@@ -427,28 +394,28 @@ if (jQuery) (function($) {
 		if (data.naturalHeight > (data.frameHeight - data.marginReal) || data.naturalWidth > (data.frameWidth - data.marginReal)) {
 			_setMinimums(data);
 			data.targetImageHeight = data.minHeight;
-			data.targetImageWidth = data.minWidth;
+			data.targetImageWidth  = data.minWidth;
 		}
 		
-		// SET INITIAL POSITIONES
+		// SET INITIAL POSITIONS
 		data.positionerLeft = data.targetPositionerLeft = data.centerLeft;
-		data.positionerTop = data.targetPositionerTop = data.centerTop;
+		data.positionerTop  = data.targetPositionerTop  = data.centerTop;
 		
-		data.imageLeft = -data.targetImageWidth / 2;
-		data.imageTop = -data.targetImageHeight / 2;
+		data.imageLeft   = data.targetImageLeft = Math.round(-data.targetImageWidth / 2);
+		data.imageTop    = data.targetImageTop  = Math.round(-data.targetImageHeight / 2);
 		data.imageHeight = data.targetImageHeight;
-		data.imageWidth = data.targetImageWidth;
+		data.imageWidth  = data.targetImageWidth;
 		
 		data.$positioner.css({ 
 			left: data.positionerLeft,
-			top: data.positionerTop
+			top:  data.positionerTop
 		});
 		
 		data.$holder.css({
-			left: data.imageLeft,
-			top: data.imageTop,
+			left:   data.imageLeft,
+			top:    data.imageTop,
 			height: data.imageHeight,
-			width: data.imageWidth
+			width:  data.imageWidth
 		}).append(data.$image)
 		  .on("mousedown.zoomer", data, _dragStart);
 		
@@ -459,11 +426,11 @@ if (jQuery) (function($) {
 			});
 			
 			data.tileHeightPercentage = 100 / data.tiledRows;
-			data.tileWidthPercentage = 100 / data.tiledColumns;
+			data.tileWidthPercentage  = 100 / data.tiledColumns;
 			
 			data.$tiles.css({
 				height: data.tileHeightPercentage + "%",
-				width: data.tileWidthPercentage + "%"
+				width:  data.tileWidthPercentage + "%"
 			});
 			
 			data.$tiles.each(function(i, tile) {
@@ -472,7 +439,7 @@ if (jQuery) (function($) {
 				
 				$tile.css({
 					left: (data.tileWidthPercentage * parseInt(position[1], 10)) + "%",
-					top: (data.tileHeightPercentage * parseInt(position[0], 10)) + "%"
+					top:  (data.tileHeightPercentage * parseInt(position[0], 10)) + "%"
 				})
 			});
 		}
@@ -487,47 +454,46 @@ if (jQuery) (function($) {
 			// Tall
 			data.aspect = "tall";
 			
-			data.minHeight = data.frameHeight - data.marginReal;
-			data.minWidth = data.minHeight / data.imageRatioTall;
+			data.minHeight = Math.round(data.frameHeight - data.marginReal);
+			data.minWidth  = Math.round(data.minHeight / data.imageRatioTall);
 			
 			if (data.minWidth > (data.frameWidth - data.marginReal)) {
-				data.minWidth = data.frameWidth - data.marginReal;
-				data.minHeight = data.minWidth / data.imageRatioWide;
+				data.minWidth  = Math.round(data.frameWidth - data.marginReal);
+				data.minHeight = Math.round(data.minWidth / data.imageRatioWide);
 			}
 		} else {
 			// Wide
 			data.aspect = "wide";
 			
-			data.minWidth = data.frameWidth - data.marginReal;
-			data.minHeight = data.minWidth / data.imageRatioWide;
+			data.minWidth  = Math.round(data.frameWidth - data.marginReal);
+			data.minHeight = Math.round(data.minWidth / data.imageRatioWide);
 			
 			if (data.minHeight > (data.frameHeight - data.marginReal)) {
-				data.minHeight = data.frameHeight - data.marginReal;
-				data.minWidth = data.minHeight / data.imageRatioTall;
+				data.minHeight = Math.round(data.frameHeight - data.marginReal);
+				data.minWidth  = Math.round(data.minHeight / data.imageRatioTall);
 			}
 		}
 	}
-	
 	
 	// Handle animation rendering
 	function _render() {
 		for (var i = 0, count = $instances.length; i < count; i++) {
 			var data = $instances.eq(i).data("zoomer");
 			
-			if (typeof data != "null") {
+			if (typeof data == "object") {
 				// Handle mouse actions
-				if (data.action != "") {
+				if (typeof data.action != "undefined" && data.action != "") {
 					data = _updateAction(data);
 				}
 				data = _checkMaxMin(data);
 				data = _checkBounds(data);
 				
-				if (data.imageWidth != data.targetImageWidth || data.positionLeft != data.targetPositionerLeft) {
-					// Cache animation values 
+				if (data.imageWidth != data.targetImageWidth || data.positionerLeft != data.targetPositionerLeft) {
 					data = _calculateDimensions(data);
+					// Cache animation values 
 					
 					// Update animation values
-/*
+					/*
 					data.$positioner.css({ 
 						transform: "translate3D("+data.positionerLeft+"px,"+data.positionerTop+"px,0)"
 					});
@@ -539,7 +505,7 @@ if (jQuery) (function($) {
 						height: data.imageHeight,
 						width: data.imageWidth
 					});
-*/
+					*/
 					
 					data.$positioner.css({
 						left: data.positionerLeft,
@@ -561,31 +527,19 @@ if (jQuery) (function($) {
 	
 	// Update values based on current action 
 	function _updateAction(data) {
-		// Calculate change
-		data.keyDownTime += data.increment;
-		var delta = (data.imageWidth * data.keyDownTime) - data.imageWidth;
-		//if (delta > 50) delta = 50;
-		
-		if (data.action == "zoom_in") {
-			// IN
+		if (data.action == "zoom_in" || data.action == "zoom_out") {
+			// Calculate change
+			data.keyDownTime += data.increment;
+			var delta = ((data.action == "zoom_out") ? -1 : 1) * Math.round((data.imageWidth * data.keyDownTime) - data.imageWidth);
+			
 			if (data.aspect == "tall") {
 				data.targetImageHeight += delta;
-				data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
+				data.targetImageWidth = Math.round(data.targetImageHeight / data.imageRatioTall);
 			} else {
 				data.targetImageWidth += delta;
-				data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
-			}
-		} else if (data.action == "zoom_out") {
-			// OUT
-			if (data.aspect == "tall") {
-				data.targetImageHeight -= delta;
-				data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
-			} else {
-				data.targetImageWidth -= delta;
-				data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
+				data.targetImageHeight = Math.round(data.targetImageWidth / data.imageRatioWide);
 			}
 		}
-		
 		return data;
 	}
 	
@@ -595,33 +549,32 @@ if (jQuery) (function($) {
 		if (data.aspect == "tall") {
 			if (data.targetImageHeight < data.minHeight) {
 				data.targetImageHeight = data.minHeight;
-				data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
+				data.targetImageWidth  = Math.round(data.targetImageHeight / data.imageRatioTall);
 			} else if (data.targetImageHeight > data.maxHeight) {
 				data.targetImageHeight = data.maxHeight;
-				data.targetImageWidth = data.targetImageHeight / data.imageRatioTall;
+				data.targetImageWidth  = Math.round(data.targetImageHeight / data.imageRatioTall);
 			}
 		} else {
 			if (data.targetImageWidth < data.minWidth) {
-				data.targetImageWidth = data.minWidth;
-				data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
+				data.targetImageWidth  = data.minWidth;
+				data.targetImageHeight = Math.round(data.targetImageWidth / data.imageRatioWide);
 			} else if (data.targetImageWidth > data.maxWidth)  {
-				data.targetImageWidth = data.maxWidth;
-				data.targetImageHeight = data.targetImageWidth / data.imageRatioWide;
+				data.targetImageWidth  = data.maxWidth;
+				data.targetImageHeight = Math.round(data.targetImageWidth / data.imageRatioWide);
 			}
 		}
 		
 		// Recenerting when image is too small
 		if (data.action == "zoom_out" || data.lastAction == "zoom_out") {
-			data.targetPositionerLeft += (data.positionerLeft < data.centerLeft) ? 5 : -5;
-			data.targetPositionerTop += (data.positionerTop < data.centerTop) ? 5 : -5;
+			//data.targetPositionerLeft += Math.round((data.positionerLeft < data.centerLeft) ? 5 : -5);
+			//data.targetPositionerTop  += Math.round((data.positionerTop < data.centerTop) ? 5 : -5);
 			
 			var checkLeft = (data.positionerLeft < data.centerLeft) ? "less" : "more";
-			var checkTop = (data.positionerTop < data.centerTop) ? "less" : "more";
+			var checkTop  = (data.positionerTop < data.centerTop) ? "less" : "more";
 			
 			if ( (checkLeft == "less" && data.targetPositionerLeft > data.centerLeft) ||
 				 (checkLeft == "more" && data.targetPositionerLeft < data.centerLeft) ) {
 				data.targetPositionerLeft = data.centerLeft;
-				data.targetPositionerLeft = data.centerleft;
 			}
 			if ( (checkTop == "less" && data.targetPositionerTop > data.centerTop) || 
 				 (checkTop == "more" && data.targetPositionerTop < data.centerTop) ) {
@@ -635,10 +588,10 @@ if (jQuery) (function($) {
 	// Check bounds of current position and if big enough to drag
 	function _checkBounds(data) {
 		// Set bounds
-		data.boundsTop = data.frameHeight - (data.targetImageHeight * 0.5) - data.marginMax;
-		data.boundsBottom = (data.targetImageHeight * 0.5) + data.marginMax;
-		data.boundsLeft = data.frameWidth - (data.targetImageWidth * 0.5) - data.marginMax;
-		data.boundsRight = (data.targetImageWidth * 0.5) + data.marginMax;
+		data.boundsTop    = Math.round(data.frameHeight - (data.targetImageHeight * 0.5) - data.marginMax);
+		data.boundsBottom = Math.round((data.targetImageHeight * 0.5) + data.marginMax);
+		data.boundsLeft   = Math.round(data.frameWidth - (data.targetImageWidth * 0.5) - data.marginMax);
+		data.boundsRight  = Math.round((data.targetImageWidth * 0.5) + data.marginMax);
 		
 		// Check dragging bounds 
 		if (data.targetPositionerLeft < data.boundsLeft) {
@@ -667,23 +620,43 @@ if (jQuery) (function($) {
 	
 	// Calculate new values
 	function _calculateDimensions(data) {
-		data.targetImageTop = -data.targetImageHeight / 2;
-		data.targetImageLeft = -data.targetImageWidth / 2;
+		data.targetImageTop  = Math.round(-data.targetImageHeight / 2);
+		data.targetImageLeft = Math.round(-data.targetImageWidth / 2);
 		
-		data.imageWidth += (data.targetImageWidth - data.imageWidth) * data.enertia;
-		data.imageHeight += (data.targetImageHeight - data.imageHeight) * data.enertia;
-		data.imageLeft += (data.targetImageLeft - data.imageLeft) * data.enertia;
-		data.imageTop += (data.targetImageTop - data.imageTop) * data.enertia;
+		data.imageWidth  += Math.round((data.targetImageWidth - data.imageWidth) * data.enertia);
+		data.imageHeight += Math.round((data.targetImageHeight - data.imageHeight) * data.enertia);
+		data.imageLeft   += Math.round((data.targetImageLeft - data.imageLeft) * data.enertia);
+		data.imageTop    += Math.round((data.targetImageTop - data.imageTop) * data.enertia);
 		
 		if (data.action != "drag") {
-			data.positionerLeft += (data.targetPositionerLeft - data.positionerLeft) * data.enertia;
-			data.positionerTop += (data.targetPositionerTop - data.positionerTop) * data.enertia;
+			data.positionerLeft += Math.round((data.targetPositionerLeft - data.positionerLeft) * data.enertia);
+			data.positionerTop  += Math.round((data.targetPositionerTop - data.positionerTop) * data.enertia);
 		} else {
 			data.positionerLeft = data.targetPositionerLeft;
-			data.positionerTop = data.targetPositionerTop;
+			data.positionerTop  = data.targetPositionerTop;
 		}
 		
 		return data;
+	}
+	
+	// Gallery next
+	function _nextImage(e) {
+		var data = e.data;
+		
+		if (!data.loading && data.index+1 < data.images.length) {
+			data.index++;
+			_load.apply(data.$target, [ data ]);
+		}
+	}
+	
+	// Gallery previous
+	function _previousImage(e) {
+		var data = e.data;
+		
+		if (!data.loading && data.index-1 >= 0) {
+			data.index--;
+			_load.apply(data.$target, [ data ]);
+		}
 	}
 	
 	// Zoom click
@@ -718,6 +691,7 @@ if (jQuery) (function($) {
 	
 	// Start dragging
 	function _dragStart(e) {
+		
 		if (e.preventDefault) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -742,11 +716,13 @@ if (jQuery) (function($) {
 		
 		var data = e.data;
 		
-		data.targetPositionerLeft -= (data.mouseX - e.pageX);
-		data.targetPositionerTop -= (data.mouseY - e.pageY);
-		
-		data.mouseX = e.pageX;
-		data.mouseY = e.pageY;
+		if (e.pageX && e.pageY) {
+			data.targetPositionerLeft -= Math.round(data.mouseX - e.pageX);
+			data.targetPositionerTop  -= Math.round(data.mouseY - e.pageY);
+			
+			data.mouseX = e.pageX;
+			data.mouseY = e.pageY;
+		}
 	}
 	
 	// Stop dragging
@@ -778,12 +754,9 @@ if (jQuery) (function($) {
 		var data = e.data,
 			oe = e.originalEvent;
 		
-		// Check for existing touches
-		//data.touches = (data.touches) ? data.touches : [];
-		
 		if (oe.pointerId) {
 			// Normalize MS pointer events back to standard touches
-			var activeTouch = false
+			var activeTouch = false;
 			for (var i in data.touches) {
 				if (data.touches[i].identifier == oe.pointerId) {
 					activeTouch = true;
@@ -844,7 +817,7 @@ if (jQuery) (function($) {
 	function _onTouchMove(data) { 
 		if (data.touches.length == 1) {
 			data.targetPositionerLeft -= (data.mouseX - data.touches[0].pageX);
-			data.targetPositionerTop -= (data.mouseY - data.touches[0].pageY);
+			data.targetPositionerTop  -= (data.mouseY - data.touches[0].pageY);
 		} else if (data.touches.length >= 2) {
 			data.pinchEndX0 = data.touches[0].pageX - data.offset.left;
 			data.pinchEndY0 = data.touches[0].pageY - data.offset.top;
@@ -872,16 +845,16 @@ if (jQuery) (function($) {
 				}
 				data.zoomPercentage = data.targetZoomPercentage;
 				
-				data.targetImageWidth = data.imageWidth * data.targetZoomPercentage;
-				data.targetImageHeight = data.imageHeight * data.targetZoomPercentage;
+				data.targetImageWidth  = Math.round(data.imageWidth * data.targetZoomPercentage);
+				data.targetImageHeight = Math.round(data.imageHeight * data.targetZoomPercentage);
 				
 				//data = _checkMaxMin(data);
 				
 				if (data.targetImageWidth > data.minWidth && data.targetImageHeight > data.minHeight && 
 					data.targetImageWidth < data.maxWidth && data.targetImageHeight < data.maxHeight) {
 					
-					data.targetPositionerLeft = data.positionerLeft + ((data.imageWidth - data.targetImageWidth) * data.pinchPercentageX);
-					data.targetPositionerTop = data.positionerTop + ((data.imageHeight - data.targetImageHeight) * data.pinchPercentageY);
+					data.targetPositionerLeft = Math.round(data.positionerLeft + ((data.imageWidth - data.targetImageWidth) * data.pinchPercentageX));
+					data.targetPositionerTop  = Math.round(data.positionerTop + ((data.imageHeight - data.targetImageHeight) * data.pinchPercentageY));
 				}
 			}
 		}
