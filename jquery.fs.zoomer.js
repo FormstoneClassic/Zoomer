@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.2.2
+ * @version 0.2.3
  *
  * Copyright © 2013 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -179,7 +179,7 @@ if (jQuery) (function($) {
 					data.centerLeft  = Math.round(data.frameWidth * 0.5);
 					data.centerTop   = Math.round(data.frameHeight * 0.5);
 					
-					_setMinimums(data);
+					data = _setMinimums(data);
 				}
 			});
 		},
@@ -204,8 +204,6 @@ if (jQuery) (function($) {
 		for (var i = 0, count = $targets.length; i < count; i++) {
 			_build.apply($targets.eq(i), [ $.extend({}, data) ]);
 		}
-		
-		pub.resize.apply($targets);
 		
 		// kick it off
 		$instances = $(".zoomer-element");
@@ -283,6 +281,7 @@ if (jQuery) (function($) {
 		
 		// Kick it off
 		data.$target.data("zoomer", data);
+		pub.resize.apply(data.$target);
 		
 		if (data.images.length > 0) {
 			_load.apply(data.$target, [ data ]);
@@ -392,7 +391,7 @@ if (jQuery) (function($) {
 		
 		// Initial sizing to fit screen
 		if (data.naturalHeight > (data.frameHeight - data.marginReal) || data.naturalWidth > (data.frameWidth - data.marginReal)) {
-			_setMinimums(data);
+			data = _setMinimums(data);
 			data.targetImageHeight = data.minHeight;
 			data.targetImageWidth  = data.minWidth;
 		}
@@ -473,6 +472,8 @@ if (jQuery) (function($) {
 				data.minWidth  = Math.round(data.minHeight / data.imageRatioTall);
 			}
 		}
+		
+		return data;
 	}
 	
 	// Handle animation rendering
@@ -491,21 +492,6 @@ if (jQuery) (function($) {
 				if (data.imageWidth != data.targetImageWidth || data.positionerLeft != data.targetPositionerLeft) {
 					data = _calculateDimensions(data);
 					// Cache animation values 
-					
-					// Update animation values
-					/*
-					data.$positioner.css({ 
-						transform: "translate3D("+data.positionerLeft+"px,"+data.positionerTop+"px,0)"
-					});
-					
-					data.$holder.css({
-						transform: "translate3D("+data.imageLeft+"px,"+data.imageTop+"px,0)",
-						left: data.imageLeft,
-						top: data.imageTop,
-						height: data.imageHeight,
-						width: data.imageWidth
-					});
-					*/
 					
 					data.$positioner.css({
 						left: data.positionerLeft,
