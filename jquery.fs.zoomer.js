@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.2.3
+ * @version 0.2.4
  *
  * Copyright © 2013 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -165,6 +165,23 @@ if (jQuery) (function($) {
 				data = _normalizeSource(data);
 				
 				_load(data);
+			});
+		},
+		
+		// Pan to percentage
+		pan: function(leftPerc, topPerc) {
+			return $(this).each(function() {
+				var data = $(this).data("zoomer");
+				
+				if (typeof data != "undefined") {
+					if (leftPerc > 1 && topPerc > 1) {
+						leftPerc /= 100;
+						topPerc /= 100;
+					}
+					
+					data.targetPositionerLeft = Math.round(data.centerLeft - data.targetImageLeft - (data.targetImageWidth * leftPerc));
+					data.targetPositionerTop = Math.round(data.centerTop - data.targetImageTop - (data.targetImageHeight * topPerc));
+				}
 			});
 		},
 		
