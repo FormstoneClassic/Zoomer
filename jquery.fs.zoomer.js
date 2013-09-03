@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.2.4
+ * @version 0.2.5
  *
  * Copyright © 2013 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -174,10 +174,8 @@ if (jQuery) (function($) {
 				var data = $(this).data("zoomer");
 				
 				if (typeof data != "undefined") {
-					if (leftPerc > 1 && topPerc > 1) {
-						leftPerc /= 100;
-						topPerc /= 100;
-					}
+					leftPerc /= 100;
+					topPerc /= 100;
 					
 					data.targetPositionerLeft = Math.round(data.centerLeft - data.targetImageLeft - (data.targetImageWidth * leftPerc));
 					data.targetPositionerTop = Math.round(data.centerTop - data.targetImageTop - (data.targetImageHeight * topPerc));
@@ -438,7 +436,7 @@ if (jQuery) (function($) {
 		if (data.tiled) {
 			data.$holder.css({ 
 				background: "url(" + data.tiledThumbnail + ") no-repeat left top",
-				backgroundSize: "cover"
+				backgroundSize: "100% 100%"
 			});
 			
 			data.tileHeightPercentage = 100 / data.tiledRows;
@@ -569,9 +567,6 @@ if (jQuery) (function($) {
 		
 		// Recenerting when image is too small
 		if (data.action == "zoom_out" || data.lastAction == "zoom_out") {
-			//data.targetPositionerLeft += Math.round((data.positionerLeft < data.centerLeft) ? 5 : -5);
-			//data.targetPositionerTop  += Math.round((data.positionerTop < data.centerTop) ? 5 : -5);
-			
 			var checkLeft = (data.positionerLeft < data.centerLeft) ? "less" : "more";
 			var checkTop  = (data.positionerTop < data.centerTop) ? "less" : "more";
 			
@@ -757,6 +752,11 @@ if (jQuery) (function($) {
 		var data = e.data,
 			oe = e.originalEvent;
 		
+		if (oe.type.match(/(up|end)$/i)) {
+			_onTouchEnd(data, oe);
+			return;
+		}
+		
 		if (oe.pointerId) {
 			// Normalize MS pointer events back to standard touches
 			var activeTouch = false;
@@ -784,8 +784,6 @@ if (jQuery) (function($) {
 			_onTouchStart(data);
 		} else if (oe.type.match(/move$/i)) {
 			_onTouchMove(data);
-		} else if (oe.type.match(/(up|end)$/i)) {
-			_onTouchEnd(data);
 		}
 	}
 	
@@ -835,12 +833,6 @@ if (jQuery) (function($) {
 				data.pinchDeltaEnd = Math.sqrt(Math.pow((data.pinchEndX1 - data.pinchEndX0), 2) + Math.pow((data.pinchEndY1 - data.pinchEndY0), 2));
 				data.targetZoomPercentage = (data.pinchDeltaEnd / data.pinchDeltaStart);
 				
-				if (data.pinchDirection == 1 && data.targetZoomPercentage < data.zoomPercentage ||
-					data.pinchDirection == -1 && data.targetZoomPercentage > data.zoomPercentage) {
-					
-					data.pinchDeltaStart = data.pinchDeltaEnd;
-					data.targetZoomPercentage = (data.pinchDeltaEnd / data.pinchDeltaStart);
-				}
 				if (data.targetZoomPercentage > data.zoomPercentage) {
 					data.pinchDirection = 1;
 				} else if (data.targetZoomPercentage < data.zoomPercentage) {
@@ -867,8 +859,16 @@ if (jQuery) (function($) {
     }
     
     // Handle touch end
-	function _onTouchEnd(data) {
+	function _onTouchEnd(data, oe) {
 		data.action = "";
+		
+		if (oe.pointerId) {
+			for (var i in data.touches) {
+				if (data.touches[i].identifier == oe.pointerId) {
+					data.touches.splice(i, 1);
+				}
+			}
+		}
 		
 		// Clear touch events
 		if (data.touches.length < 1) {
