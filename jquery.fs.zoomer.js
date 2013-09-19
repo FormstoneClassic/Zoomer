@@ -1,7 +1,7 @@
 /*
  * Zoomer [Formstone Library]
  * @author Ben Plum
- * @version 0.3.0
+ * @version 0.3.1
  *
  * Copyright © 2013 Ben Plum <mr@benplum.com>
  * Released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
@@ -86,6 +86,8 @@ if (jQuery) (function($) {
 		targetImageHeight: 0,
 		targetImageLeft: 0,
 		targetImageTop: 0,
+		oldImageWidth: 0, 
+		oldImageHeight: 0,
 		
 		// Positioner
 		positionerLeft: 0,
@@ -112,11 +114,13 @@ if (jQuery) (function($) {
 		pinchEndY0: 0,
 		pinchEndY1: 0,
 		
+		lastPinchEndX0: 0,
+		lastPinchEndY0: 0,
+		lastPinchEndX1: 0,
+		lastPinchEndY1: 0,
+		
 		pinchDeltaStart: 0,
-		pinchDeltaEnd: 0,
-		pinchDirection: 0,
-		pinchPercentageX: 0,
-		pinchPercentageY: 0
+		pinchDeltaEnd: 0
 	};
 	
 	// Internal Data
@@ -564,17 +568,19 @@ if (jQuery) (function($) {
 		data.targetImageLeft = Math.round(-data.targetImageWidth * 0.5);
 		data.targetImageTop  = Math.round(-data.targetImageHeight * 0.5);
 		
+		/*
 		if (data.action == "pinch") {
 			data.imageWidth  = data.targetImageWidth;
 			data.imageHeight = data.targetImageHeight;
 			data.imageLeft   = data.targetImageLeft;
 			data.imageTop    = data.targetImageTop;
 		} else {
+		*/
 			data.imageWidth  += Math.round((data.targetImageWidth - data.imageWidth) * data.enertia);
 			data.imageHeight += Math.round((data.targetImageHeight - data.imageHeight) * data.enertia);
 			data.imageLeft   += Math.round((data.targetImageLeft - data.imageLeft) * data.enertia);
 			data.imageTop    += Math.round((data.targetImageTop - data.imageTop) * data.enertia);
-		}
+		//}
 		
 		// Check bounds of current position and if big enough to drag
 		// Set bounds
@@ -599,11 +605,8 @@ if (jQuery) (function($) {
 		
 		// Zoom to visible area of image
 		if (data.zoomPositionTop > 0 && data.zoomPositionLeft > 0) {
-			data.targetPositionerLeft = Math.round(data.centerLeft - data.targetImageLeft - (data.targetImageWidth * data.zoomPositionLeft));
-			data.targetPositionerTop  = Math.round(data.centerTop - data.targetImageTop - (data.targetImageHeight * data.zoomPositionTop));
-		} else if (data.pinchPositionTop > 0 && data.pinchPositionLeft > 0) {
-			data.targetPositionerLeft = Math.round(data.positionerLeft + ((data.imageWidth - data.targetImageWidth) * data.pinchPositionLeft));
-			data.targetPositionerTop  = Math.round(data.positionerTop + ((data.imageHeight - data.targetImageHeight) * data.pinchPositionTop));
+			data.targetPositionerLeft = data.centerLeft - data.targetImageLeft - (data.targetImageWidth * data.zoomPositionLeft);
+			data.targetPositionerTop  = data.centerTop - data.targetImageTop - (data.targetImageHeight * data.zoomPositionTop);
 		}
 		
 		// Check if big enough to actually drag
@@ -615,13 +618,18 @@ if (jQuery) (function($) {
 		}
 		
 		// Calculate new positions
-		if (data.action == "drag") {
+		/*
+		if (data.action == "drag" || data.action == "pinch") {
 			data.positionerLeft = data.targetPositionerLeft;
 			data.positionerTop  = data.targetPositionerTop;
 		} else {
+		*/
 			data.positionerLeft += Math.round((data.targetPositionerLeft - data.positionerLeft) * data.enertia);
 			data.positionerTop  += Math.round((data.targetPositionerTop - data.positionerTop) * data.enertia);
-		}
+		//}
+		
+		data.oldImageWidth = data.imageWidth;
+		data.oldImageHeight = data.imageHeight;
 		
 		return data;
 	}
@@ -804,8 +812,11 @@ if (jQuery) (function($) {
 	// Handle touch start
 	function _onTouchStart(data) {
 		// Touch events
-		$(window).on("touchmove.zoomer MSPointerMove.zoomer", data, _onTouch)
-				 .on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
+		if (!data.touchEventsBound) {
+			data.touchEventsBound = true;
+			$(window).on("touchmove.zoomer MSPointerMove.zoomer", data, _onTouch)
+					 .on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
+		}
 		
 		data.zoomPercentage = 1;
 		
@@ -818,10 +829,14 @@ if (jQuery) (function($) {
 			data.pinchStartX1 = data.touches[1].pageX - data.offset.left;
 			data.pinchStartY1 = data.touches[1].pageY - data.offset.top;
 			
+			data.pinchStartX = ((data.pinchStartX0 + data.pinchStartX1) / 2.0);
+			data.pinchStartY = ((data.pinchStartY0 + data.pinchStartY1) / 2.0);
+			
 			data.imageWidthStart = data.imageWidth;
 			data.imageHeightStart = data.imageHeight;
 			
-			_setPinchPosition(data, ((data.pinchStartX0 + data.pinchStartX1) * 0.5), ((data.pinchStartY0 + data.pinchStartY1) * 0.5));
+			_setZoomPosition(data);
+			
 			data.pinchDeltaStart = Math.sqrt(Math.pow((data.pinchStartX1 - data.pinchStartX0), 2) + Math.pow((data.pinchStartY1 - data.pinchStartY0), 2));
 		}
 		
@@ -855,6 +870,9 @@ if (jQuery) (function($) {
 				data.targetImageWidth  = Math.round(data.imageWidthStart * data.zoomPercentage);
 				data.targetImageHeight = Math.round(data.imageHeightStart * data.zoomPercentage);
 				
+				data.pinchEndX = ((data.pinchEndX0 + data.pinchEndX1) / 2.0);
+				data.pinchEndY = ((data.pinchEndY0 + data.pinchEndY1) / 2.0);
+				
 				data.lastPinchEndX0 = data.pinchEndX0;
 				data.lastPinchEndY0 = data.pinchEndY0;
 				data.lastPinchEndX1 = data.pinchEndX1;
@@ -869,15 +887,16 @@ if (jQuery) (function($) {
     // Handle touch end
 	function _onTouchEnd(data, oe) {
 		data.action = "";
-		_clearPinchPosition(data);
 		
 		data.lastPinchEndX0 = data.pinchEndX0 = data.pinchStartX0 = 0;
 		data.lastPinchEndY0 = data.pinchEndY0 = data.pinchStartY0 = 0;
 		data.lastPinchEndX1 = data.pinchEndX1 = data.pinchStartX1 = 0;
 		data.lastPinchEndY1 = data.pinchEndY1 = data.pinchStartY1 = 0;
 		
-		data.imageWidthStart = data.imageWidth;
-		data.imageHeightStart = data.imageHeight;
+		data.pinchStartX = data.pinchEndX = 0;
+		data.pinchStartY = data.pinchEndX = 0;
+		
+		_clearZoomPosition(data);
 		
 		if (oe.pointerId) {
 			for (var i in data.touches) {
@@ -890,21 +909,11 @@ if (jQuery) (function($) {
 		// Clear touch events
 		if (data.touches.length < 1) {
 			$(window).off(".zoomer");
+			data.touchEventsBound = false;
+		} else {
+			data.mouseX = data.touches[0].pageX;
+			data.mouseY = data.touches[0].pageY;
 		}
-	}
-	
-	function _setPinchPosition(data, left, top) {
-		data.pinchPositionLeft = (left - (data.positionerLeft - data.centerLeft)) / data.imageWidth;
-		data.pinchPositionTop  = (top - (data.positionerTop - data.centerTop)) / data.imageHeight;
-		
-		return data;
-	}
-	
-	function _clearPinchPosition(data) {
-		data.pinchPositionLeft = 0;
-		data.pinchPositionTop = 0;
-		
-		return data;
 	}
 	
 	function _normalizeSource(data) {
