@@ -1,0 +1,32 @@
+{
+	"name": "Zoomer",
+	"version": "0.3.2",
+	"description": "A jQuery plugin for smooth image exploration. Part of the formstone library.",
+	"keywords": [
+		"javascript",
+		"jquery",
+		"image",
+		"zoom",
+		"touch",
+		"ui",
+		"formstone",
+		"benplum"
+	],
+	"authors": [
+		"Ben Plum"
+	],
+	"license": "MIT",
+	"homepage": "http://www.benplum.com/formstone/tipper/",
+	"main": [
+		"jquery.fs.zoomer.css",
+		"jquery.fs.zoomer.min.js",
+		"fs-zoomer-loading.png"
+	],
+	"ignore": [
+		"*.json"
+	],
+	"dependencies": {
+		"jquery": ">= 1.7.0"
+	},
+	"devDependencies": {}
+}

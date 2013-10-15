@@ -1,7 +1,7 @@
 {
 	"name": "zoomer",
 	"title": "Zoomer",
-	"description": "A jQuery plugin for smooth image exploration.",
+	"description": "A jQuery plugin for smooth image exploration. Part of the formstone library.",
 	"keywords": [
 		"image",
 		"zoom",
