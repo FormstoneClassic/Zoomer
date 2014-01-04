@@ -1,4 +1,4 @@
-/*
+/*!
  * Zoomer [Formstone Library]
  * @author Ben Plum
  * @version 0.3.3
