@@ -1,11 +1,3 @@
-/* 
- * Zoomer v3.0.0 - 2014-01-29 
- * A jQuery plugin for smooth image exploration. Part of the formstone library. 
- * http://formstone.it/components/zoomer/ 
- * 
- * Copyright 2014 Ben Plum; MIT Licensed 
- */ 
-
 ;(function ($, window) {
 	"use strict";
 
