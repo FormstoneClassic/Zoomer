@@ -163,7 +163,7 @@
 			var $targets = $(this).each(function(i, target) {
 				var data = $(target).data("zoomer");
 
-				if (data !== null) {
+				if (data) {
 					$(window).off(".zoomer");
 					data.$holder.off(".zoomer");
 					data.$zoomer.off(".zoomer");
@@ -198,7 +198,7 @@
 			return $(this).each(function(i, target) {
 				var data = $(target).data("zoomer");
 
-				if (data !== null) {
+				if (data) {
 					data.source = source;
 					data.index = 0;
 					data = _normalizeSource(data);
@@ -220,7 +220,7 @@
 			return $(this).each(function(i, target) {
 				var data = $(target).data("zoomer");
 
-				if (data !== null) {
+				if (data) {
 					left /= 100;
 					top /= 100;
 
@@ -240,7 +240,7 @@
 			return $(this).each(function(i, target) {
 				var data = $(target).data("zoomer");
 
-				if (data !== null) {
+				if (data) {
 					data.frameWidth  = data.$target.outerWidth();
 					data.frameHeight = data.$target.outerHeight();
 					data.centerLeft  = Math.round(data.frameWidth * 0.5);
@@ -261,7 +261,7 @@
 			return $(this).each(function() {
 				var data = $(this).data("zoomer");
 
-				if (data !== null && typeof data.$image !== 'undefined') {
+				if (data && typeof data.$image !== 'undefined') {
 					data.$image.remove();
 				}
 			});

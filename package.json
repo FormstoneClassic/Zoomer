@@ -2,7 +2,7 @@
   "name": "Zoomer",
   "id": "zoomer",
   "codename": "jquery.fs.zoomer",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description":  "A jQuery plugin for smooth image exploration. Part of the formstone library.",
   "keywords": [
   	"image",
