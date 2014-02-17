@@ -960,7 +960,7 @@
 		}
 
 		// Clear touch events
-		if (data.touches.length < 1) {
+		if (data.touches.length <= 1) {
 			$(window).off(".zoomer");
 			data.touchEventsBound = false;
 		} else {
