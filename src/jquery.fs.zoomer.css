@@ -11,7 +11,7 @@
 		     -o-user-select: none;
 		        user-select: none;
  	}
-	.zoomer { background: #eee url(fs-zoomer-loading.gif) no-repeat center; height: 100%; overflow: hidden; position: relative; width: 100%;
+	.zoomer { background: #eee url(jquery.fs.zoomer-loading.gif) no-repeat center; height: 100%; overflow: hidden; position: relative; width: 100%;
 		-webkit-transition: none;
 		   -moz-transition: none;
 		   	-ms-transition: none;
