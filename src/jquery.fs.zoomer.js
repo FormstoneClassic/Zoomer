@@ -518,6 +518,26 @@
 
 		data.$holder.animate({ opacity: 1 }, 300);
 		data.loading = false;
+
+		// Start preloading
+		if (data.gallery) {
+			_preloadGallery(data);
+		}
+	}
+
+	/**
+	 * @method private
+	 * @name _preloadGallery
+	 * @description Preloads previous and next images in gallery for faster rendering
+	 * @param data [object] "Instance Data"
+	 */
+	function _preloadGallery(data) {
+		if (data.index > 0) {
+			$('<img src="' + data.images[data.index - 1] + '">');
+		}
+		if (data.index < data.images.length - 1) {
+			$('<img src="' + data.images[data.index + 1] + '">');
+		}
 	}
 
 	// Set minimum values
