@@ -1,5 +1,5 @@
 /* 
- * Zoomer v3.0.7 - 2014-03-15 
+ * Zoomer v3.0.8 - 2014-03-15 
  * A jQuery plugin for smooth image exploration. Part of the formstone library. 
  * http://formstone.it/components/zoomer/ 
  * 
@@ -223,7 +223,7 @@
 		 * @description Pans plugin instances
 		 * @param left [int] "Percentage to pan to (50 = half)"
 		 * @param top [int] "Percentage to pan to (50 = half)"
-		 * @example $(".target").zoomer("load", "path/to/image.jpg");
+		 * @example $(".target").zoomer("pan", 50, 50);
 		 */
 		pan: function(left, top) {
 			return $(this).each(function(i, target) {
