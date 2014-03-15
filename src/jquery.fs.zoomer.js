@@ -1,9 +1,10 @@
 ;(function ($, window) {
 	"use strict";
 
-	// Internal Data
-	var animating = false,
-		$instances;
+	var $window = $(window),
+		$instances,
+		animating = false,
+		transformSupported = false;
 
 	/**
 	 * @options
@@ -164,7 +165,7 @@
 				var data = $(target).data("zoomer");
 
 				if (data) {
-					$(window).off(".zoomer");
+					$window.off(".zoomer");
 					data.$holder.off(".zoomer");
 					data.$zoomer.off(".zoomer");
 					data.controls.$zoomIn.off(".zoomer");
@@ -210,7 +211,7 @@
 
 		/**
 		 * @method
-		 * @name load
+		 * @name pan
 		 * @description Pans plugin instances
 		 * @param left [int] "Percentage to pan to (50 = half)"
 		 * @param top [int] "Percentage to pan to (50 = half)"
@@ -253,7 +254,7 @@
 
 		/**
 		 * @method
-		 * @name load
+		 * @name unload
 		 * @description Unload image from plugins instances
 		 * @example $(".target").zoomer("unload");
 		 */
@@ -268,97 +269,120 @@
 		}
 	};
 
-	// Initialize
+	/**
+	 * @method private
+	 * @name _init
+	 * @description Initializes plugin
+	 * @param opts [object] "Initialization options"
+	 */
 	function _init(opts) {
-		var data = $.extend({}, options, properties, opts);
+		// Settings
+		opts = $.extend({}, options, properties, opts);
 
-		var $targets = $(this);
-		for (var i = 0, count = $targets.length; i < count; i++) {
-			_build.apply($targets.eq(i), [ $.extend({}, data) ]);
+		transformSupported = _getTransformSupport();
+
+		// Apply to each element
+		var $items = $(this);
+		for (var i = 0, count = $items.length; i < count; i++) {
+			_build($items.eq(i), opts);
 		}
 
-		// kick it off
+		// Start main animation loop
 		$instances = $(".zoomer-element");
 		_startAnimation();
 
-		// Maintain chainability
-		return $targets;
+		return $items;
 	}
 
-	// Build each instance
-	function _build(data) {
-		data.$target = $(this);
+	/**
+	 * @method private
+	 * @name _build
+	 * @description Builds each instance
+	 * @param $target [jQuery object] "Target jQuery object"
+	 * @param data [object] <{}> "Options object"
+	 */
+	function _build($target, data) {
+		if (!$target.data("zoomer")) {
+			data = $.extend({}, data, $target.data("zoomer-options"));
 
-		data.marginReal = data.marginMin * 2;
-		data.originalDOM = data.$target.html();
+			data.$target = $target;
 
-		if (data.$target.find("img").length > 0) {
-			data.source = [];
-			data.$target.find("img").each(function() {
-				data.source.push($(this).attr("src"));
-			});
-			data.$target.empty();
-		}
-		data = _normalizeSource(data);
+			data.marginReal = data.marginMin * 2;
+			data.originalDOM = data.$target.html();
 
-		// Assemble HTML
-		var html = '<div class="zoomer ' + data.customClass + '">';
-		html += '<div class="zoomer-positioner">';
-		html += '<div class="zoomer-holder">';
-		html += '</div>';
-		html += '</div>';
-		html += '</div>';
+			if (data.$target.find("img").length > 0) {
+				data.source = [];
+				data.$target.find("img").each(function() {
+					data.source.push($(this).attr("src"));
+				});
+				data.$target.empty();
+			}
+			data = _normalizeSource(data);
 
-		data.$zoomer = $(html);
-		data.$target.addClass("zoomer-element")
-					.html(data.$zoomer);
-
-		if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous) {
-			data.controls.$zoomIn = $(data.controls.zoomIn);
-			data.controls.$zoomOut = $(data.controls.zoomOut);
-			data.controls.$next = $(data.controls.next);
-			data.controls.$previous = $(data.controls.previous);
-		} else {
-			html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
-			html += '<span class="zoomer-previous">&lsaquo;</span>';
-			html += '<span class="zoomer-zoom-out">-</span>';
-			html += '<span class="zoomer-zoom-in">+</span>';
-			html += '<span class="zoomer-next">&rsaquo;</span>';
+			// Assemble HTML
+			var html = '<div class="zoomer ' + data.customClass + '">';
+			html += '<div class="zoomer-positioner">';
+			html += '<div class="zoomer-holder">';
+			html += '</div>';
+			html += '</div>';
 			html += '</div>';
 
-			data.$zoomer.append(html);
+			data.$zoomer = $(html);
+			data.$target.addClass("zoomer-element")
+						.html(data.$zoomer);
 
-			data.controls.$default = data.$zoomer.find(".zoomer-controls");
-			data.controls.$zoomIn = data.$zoomer.find(".zoomer-zoom-in");
-			data.controls.$zoomOut = data.$zoomer.find(".zoomer-zoom-out");
-			data.controls.$next = data.$zoomer.find(".zoomer-next");
-			data.controls.$previous = data.$zoomer.find(".zoomer-previous");
-		}
+			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous) {
+				data.controls.$zoomIn = $(data.controls.zoomIn);
+				data.controls.$zoomOut = $(data.controls.zoomOut);
+				data.controls.$next = $(data.controls.next);
+				data.controls.$previous = $(data.controls.previous);
+			} else {
+				html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
+				html += '<span class="zoomer-previous">&lsaquo;</span>';
+				html += '<span class="zoomer-zoom-out">-</span>';
+				html += '<span class="zoomer-zoom-in">+</span>';
+				html += '<span class="zoomer-next">&rsaquo;</span>';
+				html += '</div>';
 
-		// Cache jquery objects
-		data.$positioner = data.$zoomer.find(".zoomer-positioner");
-		data.$holder = data.$zoomer.find(".zoomer-holder");
+				data.$zoomer.append(html);
 
-		// Bind events
-		data.controls.$zoomIn.on("touchstart.zoomer mousedown.zoomer", data, _zoomIn)
-							 .on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
-		data.controls.$zoomOut.on("touchstart.zoomer mousedown.zoomer", data, _zoomOut)
-							  .on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
-		data.controls.$next.on("click.zoomer", data, _nextImage);
-		data.controls.$previous.on("click.zoomer", data, _previousImage);
-		data.$zoomer.on("mousedown.zoomer", data, _dragStart)
-					.on("touchstart.zoomer MSPointerDown.zoomer", ":not(.zoomer-controls)", data, _onTouch);
+				data.controls.$default = data.$zoomer.find(".zoomer-controls");
+				data.controls.$zoomIn = data.$zoomer.find(".zoomer-zoom-in");
+				data.controls.$zoomOut = data.$zoomer.find(".zoomer-zoom-out");
+				data.controls.$next = data.$zoomer.find(".zoomer-next");
+				data.controls.$previous = data.$zoomer.find(".zoomer-previous");
+			}
 
-		// Kick it off
-		data.$target.data("zoomer", data);
-		pub.resize.apply(data.$target);
+			// Cache jquery objects
+			data.$positioner = data.$zoomer.find(".zoomer-positioner");
+			data.$holder = data.$zoomer.find(".zoomer-holder");
 
-		if (data.images.length > 0) {
-			_load.apply(data.$target, [ data ]);
+			// Bind events
+			data.controls.$zoomIn.on("touchstart.zoomer mousedown.zoomer", data, _zoomIn)
+								 .on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
+			data.controls.$zoomOut.on("touchstart.zoomer mousedown.zoomer", data, _zoomOut)
+								  .on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
+			data.controls.$next.on("click.zoomer", data, _nextImage);
+			data.controls.$previous.on("click.zoomer", data, _previousImage);
+			data.$zoomer.on("mousedown.zoomer", data, _dragStart)
+						.on("touchstart.zoomer MSPointerDown.zoomer", ":not(.zoomer-controls)", data, _onTouch);
+
+			// Kick it off
+			data.$target.data("zoomer", data);
+			pub.resize.apply(data.$target);
+
+			if (data.images.length > 0) {
+				_load.apply(data.$target, [ data ]);
+			}
 		}
 	}
 
-	// Route loading action
+	/**
+	 * @method private
+	 * @name _load
+	 * @description Delegates loading action
+	 * @param data [object] "Instance data"
+	 */
 	function _load(data) {
 		// If gallery
 		if (data.gallery) {
@@ -377,7 +401,13 @@
 		}
 	}
 
-	// Begin loading image
+	/**
+	 * @method private
+	 * @name _loadImage
+	 * @description Handles loading an image or set of tiles
+	 * @param data [object] "Instance data"
+	 * @param source [string | object] "Source URL or object"
+	 */
 	function _loadImage(data, source) {
 		data.loading = true;
 
@@ -421,7 +451,12 @@
 		}
 	}
 
-	// Hanlde tile load
+	/**
+	 * @method private
+	 * @name _onTileLoad
+	 * @description Handles tile load
+	 * @param e [object] "Event data"
+	 */
 	function _onTileLoad(e) {
 		var data = e.data;
 
@@ -437,7 +472,12 @@
 		}
 	}
 
-	// Handle image load
+	/**
+	 * @method private
+	 * @name _onImageLoad
+	 * @description Handles image load
+	 * @param e [object] "Event data"
+	 */
 	function _onImageLoad(e) {
 		var data = e.data;
 
@@ -453,6 +493,11 @@
 			data.naturalHeight /= 2;
 			data.naturalWidth /= 2;
 		}
+
+		data.$holder.css({
+			height: data.naturalHeight,
+			width:  data.naturalWidth
+		});
 
 		data.targetImageHeight = data.naturalHeight;
 		data.targetImageWidth  = data.naturalWidth;
@@ -479,17 +524,26 @@
 		data.imageHeight = data.targetImageHeight;
 		data.imageWidth  = data.targetImageWidth;
 
-		data.$positioner.css({
-			left: data.positionerLeft,
-			top:  data.positionerTop
-		});
+		if (transformSupported) {
+			var scaleX = data.imageWidth / data.naturalWidth,
+				scaleY = data.imageHeight / data.naturalHeight;
 
-		data.$holder.css({
-			left:   data.imageLeft,
-			top:    data.imageTop,
-			height: data.imageHeight,
-			width:  data.imageWidth
-		}).append(data.$image);
+			data.$positioner.css( _prefix("transform", "translate3d("+data.positionerLeft+"px, "+data.positionerTop+"px, 0)") );
+			data.$holder.css( _prefix("transform", "translate3d(-50%, -50%, 0) scale("+scaleX+","+scaleY+")") );
+		} else {
+			data.$positioner.css({
+				left: data.positionerLeft,
+				top:  data.positionerTop
+			});
+			data.$holder.css({
+				left:   data.imageLeft,
+				top:    data.imageTop,
+				height: data.imageHeight,
+				width:  data.imageWidth
+			});
+		}
+
+		data.$holder.append(data.$image);
 
 		if (data.tiled) {
 			data.$holder.css({
@@ -540,7 +594,12 @@
 		}
 	}
 
-	// Set minimum values
+	/**
+	 * @method private
+	 * @name _setMinimums
+	 * @description Sets minimum dimensions
+	 * @param data [object] "Instance Data"
+	 */
 	function _setMinimums(data) {
 		if (data.naturalHeight > data.naturalWidth) {
 			// Tall
@@ -569,7 +628,11 @@
 		return data;
 	}
 
-	// Handle animation rendering
+	/**
+	 * @method private
+	 * @name _render
+	 * @description Main animation loop
+	 */
 	function _render() {
 		for (var i = 0, count = $instances.length; i < count; i++) {
 			var data = $instances.eq(i).data("zoomer");
@@ -580,16 +643,24 @@
 				data.lastAction = data.action;
 
 				// Update DOM
-				data.$positioner.css({
-					left: data.positionerLeft,
-					top: data.positionerTop
-				});
-				data.$holder.css({
-					left: data.imageLeft,
-					top: data.imageTop,
-					width: data.imageWidth,
-					height: data.imageHeight
-				});
+				if (transformSupported) {
+					var scaleX = data.imageWidth / data.naturalWidth,
+						scaleY = data.imageHeight / data.naturalHeight;
+
+					data.$positioner.css( _prefix("transform", "translate3d("+data.positionerLeft+"px, "+data.positionerTop+"px, 0)") );
+					data.$holder.css( _prefix("transform", "translate3d(-50%, -50%, 0) scale("+scaleX+","+scaleY+")") );
+				} else {
+					data.$positioner.css({
+						left: data.positionerLeft,
+						top: data.positionerTop
+					});
+					data.$holder.css({
+						left: data.imageLeft,
+						top: data.imageTop,
+						width: data.imageWidth,
+						height: data.imageHeight
+					});
+				}
 
 				// Run callback function
 				if (data.callback) {
@@ -601,7 +672,12 @@
 		}
 	}
 
-	// Update dimentions and sizes; check bounds for re-centering
+	/**
+	 * @method private
+	 * @name _updateValues
+	 * @description Updates current image values
+	 * @param data [object] "Instance Data"
+	 */
 	function _updateValues(data) {
 		// Update values based on current action
 		if (data.action === "zoom_in" || data.action === "zoom_out") {
@@ -641,19 +717,17 @@
 		data.targetImageLeft = Math.round(-data.targetImageWidth * 0.5);
 		data.targetImageTop  = Math.round(-data.targetImageHeight * 0.5);
 
-		/*
-		if (data.action === "pinch") {
+		if (data.action === "drag" || data.action === "pinch") {
 			data.imageWidth  = data.targetImageWidth;
 			data.imageHeight = data.targetImageHeight;
 			data.imageLeft   = data.targetImageLeft;
 			data.imageTop    = data.targetImageTop;
 		} else {
-		*/
 			data.imageWidth  += Math.round((data.targetImageWidth - data.imageWidth) * data.enertia);
 			data.imageHeight += Math.round((data.targetImageHeight - data.imageHeight) * data.enertia);
 			data.imageLeft   += Math.round((data.targetImageLeft - data.imageLeft) * data.enertia);
 			data.imageTop    += Math.round((data.targetImageTop - data.imageTop) * data.enertia);
-		//}
+		}
 
 		// Check bounds of current position and if big enough to drag
 		// Set bounds
@@ -682,24 +756,24 @@
 			data.targetPositionerTop  = data.centerTop - data.targetImageTop - (data.targetImageHeight * data.zoomPositionTop);
 		}
 
-		// Check if big enough to actually drag
-		if (data.targetImageWidth < data.frameWidth) {
-			data.targetPositionerLeft = data.centerLeft;
-		}
-		if (data.targetImageHeight < data.frameHeight) {
-			data.targetPositionerTop = data.centerTop;
+		if (data.action !== "pinch") {
+			// Recenter when small enough
+			if (data.targetImageWidth < data.frameWidth) {
+				data.targetPositionerLeft = data.centerLeft;
+			}
+			if (data.targetImageHeight < data.frameHeight) {
+				data.targetPositionerTop = data.centerTop;
+			}
 		}
 
 		// Calculate new positions
-		/*
 		if (data.action === "drag" || data.action === "pinch") {
 			data.positionerLeft = data.targetPositionerLeft;
-			data.positionerTop  = data.targetPositionerTop;
+			data.positionerTop = data.targetPositionerTop;
 		} else {
-		*/
 			data.positionerLeft += Math.round((data.targetPositionerLeft - data.positionerLeft) * data.enertia);
 			data.positionerTop  += Math.round((data.targetPositionerTop - data.positionerTop) * data.enertia);
-		//}
+		}
 
 		data.oldImageWidth = data.imageWidth;
 		data.oldImageHeight = data.imageHeight;
@@ -707,7 +781,12 @@
 		return data;
 	}
 
-	// Gallery next
+	/**
+	 * @method private
+	 * @name _nextImage
+	 * @description Handles next button click
+	 * @param e [object] "Event Data"
+	 */
 	function _nextImage(e) {
 		var data = e.data;
 
@@ -717,7 +796,12 @@
 		}
 	}
 
-	// Gallery previous
+	/**
+	 * @method private
+	 * @name _previousImage
+	 * @description Handles previous button click
+	 * @param e [object] "Event Data"
+	 */
 	function _previousImage(e) {
 		var data = e.data;
 
@@ -727,7 +811,12 @@
 		}
 	}
 
-	// Zoom click
+	/**
+	 * @method private
+	 * @name _zoomIn
+	 * @description Handles zoom in button click
+	 * @param e [object] "Event Data"
+	 */
 	function _zoomIn(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -739,7 +828,12 @@
 		data.action = "zoom_in";
 	}
 
-	// Zoom click
+	/**
+	 * @method private
+	 * @name _zoomOut
+	 * @description Handles zoom out button click
+	 * @param e [object] "Event Data"
+	 */
 	function _zoomOut(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -751,7 +845,12 @@
 		data.action = "zoom_out";
 	}
 
-	// Kill zoom
+	/**
+	 * @method private
+	 * @name _clearZoom
+	 * @description Clears current zoom action
+	 * @param e [object] "Event Data"
+	 */
 	function _clearZoom(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -763,6 +862,14 @@
 		data.action = "";
 	}
 
+	/**
+	 * @method private
+	 * @name _setZoomPosition
+	 * @description Sets zoom position
+	 * @param data [object] "Instance Data"
+	 * @param left [number] "Left position"
+	 * @param top [number] "Top position"
+	 */
 	function _setZoomPosition(data, left, top) {
 		left = left || (data.imageWidth * 0.5);
 		top  = top || (data.imageHeight * 0.5);
@@ -773,6 +880,12 @@
 		return data;
 	}
 
+	/**
+	 * @method private
+	 * @name _clearZoomPosition
+	 * @description Clears zoom position
+	 * @param data [object] "Instance Data"
+	 */
 	function _clearZoomPosition(data) {
 		data.zoomPositionTop = 0;
 		data.zoomPositionLeft = 0;
@@ -780,7 +893,12 @@
 		return data;
 	}
 
-	// Start dragging
+	/**
+	 * @method private
+	 * @name _dragStart
+	 * @description Handles drag start
+	 * @param e [object] "Event Data"
+	 */
 	function _dragStart(e) {
 		if (e.preventDefault) {
 			e.preventDefault();
@@ -796,11 +914,16 @@
 		data.targetPositionerLeft = data.positionerLeft;
 		data.targetPositionerTop = data.positionerTop;
 
-		$(window).on("mousemove.zoomer", data, _onDrag)
-				 .on("mouseup.zoomer", data, _dragStop);
+		$window.on("mousemove.zoomer", data, _onDrag)
+			   .on("mouseup.zoomer", data, _dragStop);
 	}
 
-	// Handle dragging
+	/**
+	 * @method private
+	 * @name _onDrag
+	 * @description Handles dragging
+	 * @param e [object] "Event Data"
+	 */
 	function _onDrag(e) {
 		if (e.preventDefault) {
 			e.preventDefault();
@@ -818,7 +941,12 @@
 		}
 	}
 
-	// Stop dragging
+	/**
+	 * @method private
+	 * @name _dragStop
+	 * @description Handles drag end
+	 * @param e [object] "Event Data"
+	 */
 	function _dragStop(e) {
 		if (e.preventDefault) {
 			e.preventDefault();
@@ -828,10 +956,15 @@
 		var data = e.data;
 		data.action = "";
 
-		$(window).off("mousemove.zoomer mouseup.zoomer");
+		$window.off("mousemove.zoomer mouseup.zoomer");
 	}
 
-	// Normalize touch events then delegate action
+	/**
+	 * @method private
+	 * @name _onTouch
+	 * @description Delegates touch event
+	 * @param e [object] "Event Data"
+	 */
 	function _onTouch(e) {
 		if ($(e.target).parent(".zoomer-controls").length > 0) {
 			return;
@@ -882,13 +1015,18 @@
 		}
 	}
 
-	// Handle touch start
+	/**
+	 * @method private
+	 * @name _onTouchStart
+	 * @description Handles touch start
+	 * @param data [object] "Instance Data"
+	 */
 	function _onTouchStart(data) {
 		// Touch events
 		if (!data.touchEventsBound) {
 			data.touchEventsBound = true;
-			$(window).on("touchmove.zoomer MSPointerMove.zoomer", data, _onTouch)
-					 .on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
+			$window.on("touchmove.zoomer MSPointerMove.zoomer", data, _onTouch)
+				   .on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
 		}
 
 		data.zoomPercentage = 1;
@@ -917,7 +1055,12 @@
 		data.mouseY = data.touches[0].pageY;
 	}
 
-	// Handle touch move
+	/**
+	 * @method private
+	 * @name _onTouchMove
+	 * @description Handles touch move
+	 * @param data [object] "Instance Data"
+	 */
 	function _onTouchMove(data) {
 		if (data.touches.length === 1) {
 			data.action = "drag";
@@ -957,7 +1100,12 @@
 		data.mouseY = data.touches[0].pageY;
     }
 
-    // Handle touch end
+   /**
+	 * @method private
+	 * @name _onTouchEnd
+	 * @description Handles touch end
+	 * @param data [object] "Instance Data"
+	 */
 	function _onTouchEnd(data, oe) {
 		data.action = "";
 
@@ -980,15 +1128,23 @@
 		}
 
 		// Clear touch events
-		if (data.touches.length <= 1) {
-			$(window).off(".zoomer");
+		/* if (data.touches.length <= 1) { */
+			$window.off(".zoomer");
 			data.touchEventsBound = false;
+		/*
 		} else {
 			data.mouseX = data.touches[0].pageX;
 			data.mouseY = data.touches[0].pageY;
 		}
+		*/
 	}
 
+	/**
+	 * @method private
+	 * @name _normalizeSource
+	 * @description Normalizes source string or object
+	 * @param data [object] "Instance Data"
+	 */
 	function _normalizeSource(data) {
 		data.tiled = false;
 		data.gallery = false;
@@ -1011,7 +1167,11 @@
 		return data;
 	}
 
-	// Start animation loop
+	/**
+	 * @method private
+	 * @name _startAnimation
+	 * @description Starts main animation loop
+	 */
 	function _startAnimation() {
 		if (!animating) {
 			animating = true;
@@ -1019,12 +1179,20 @@
 		}
 	}
 
-	// Kill animation loop
+	/**
+	 * @method private
+	 * @name _clearAnimation
+	 * @description End main animation loop
+	 */
 	function _clearAnimation() {
 		animating = false;
 	}
 
-	// Handle animation loop
+	/**
+	 * @method private
+	 * @name _onAnimate
+	 * @description Handles RAF
+	 */
 	function _onAnimate() {
 		if (animating) {
 			window.requestAnimationFrame(_onAnimate);
@@ -1032,7 +1200,57 @@
 		}
 	}
 
-	// Define Plugin
+	/**
+	 * @method private
+	 * @name _prefix
+	 * @description Builds vendor-prefixed styles
+	 * @param property [string] "Property to prefix"
+	 * @param value [string] "Property value"
+	 * @return [string] "Vendor-prefixed style"
+	 */
+	function _prefix(property, value) {
+		var r = {};
+
+		r["-webkit-" + property] = value;
+		r[   "-moz-" + property] = value;
+		r[    "-ms-" + property] = value;
+		r[     "-o-" + property] = value;
+		r[             property] = value;
+
+		return r;
+	}
+
+	/**
+	 * @method private
+	 * @name _getTransformSupport
+	 * @description Determines if transforms are support
+	 * @return [boolean] "True if transforms supported"
+	 */
+	function _getTransformSupport() {
+		var transforms = {
+				"webkitTransform": "-webkit-transform",
+				"MozTransform":    "-moz-transform",
+				"msTransform":     "-ms-transform",
+				"OTransform":      "-o-transform",
+				"transform":       "transform"
+			},
+			test = document.createElement("div"),
+			has3d;
+
+		document.body.insertBefore(test, null);
+
+		for (var type in transforms) {
+			if (test.style[type] !== undefined) {
+				test.style[type] = "translate3d(1px, 1px, 1px)";
+				has3d = window.getComputedStyle(test).getPropertyValue(transforms[type]);
+			}
+		}
+
+		document.body.removeChild(test);
+
+		return (has3d !== undefined && has3d.length > 0 && has3d !== "none");
+	}
+
 	$.fn.zoomer = function(method) {
 		if (pub[method]) {
 			return pub[method].apply(this, Array.prototype.slice.call(arguments, 1));
