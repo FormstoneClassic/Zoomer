@@ -1,5 +1,5 @@
 /* 
- * Zoomer v3.0.9 - 2014-05-28 
+ * Zoomer v3.0.10 - 2014-07-01 
  * A jQuery plugin for smooth image exploration. Part of the formstone library. 
  * http://formstone.it/components/zoomer/ 
  * 
@@ -655,12 +655,16 @@
 					var scaleX = data.imageWidth / data.naturalWidth,
 						scaleY = data.imageHeight / data.naturalHeight;
 
-					if (!isNaN(scaleX) && !isNaN(scaleY) && scaleX != Infinity && scaleY!=Infinity) {
-                        data.$positioner.css(_prefix("transform", "translate3d(" + data.positionerLeft + "px, " + data.positionerTop + "px, 0)"));
-                        data.$holder.css(_prefix("transform", "translate3d(-50%, -50%, 0) scale(" + scaleX + "," + scaleY + ")"));
-                    } else {
-                        data.$holder.css(_prefix("transform", "translate3d(-50%, -50%, 0) scale(1,1)"));
-                    }
+					// Fix invalid values
+					if (isNaN(scaleX) || scaleX < 0 || scaleX === Infinity) {
+						scaleX = 1;
+					}
+					if (isNaN(scaleY) || scaleY < 0 || scaleY === Infinity) {
+						scaleY = 1;
+					}
+
+					data.$positioner.css(_prefix("transform", "translate3d(" + data.positionerLeft + "px, " + data.positionerTop + "px, 0)"));
+					data.$holder.css(_prefix("transform", "translate3d(-50%, -50%, 0) scale(" + scaleX + "," + scaleY + ")"));
 				} else {
 					data.$positioner.css({
 						left: data.positionerLeft,

@@ -647,8 +647,16 @@
 					var scaleX = data.imageWidth / data.naturalWidth,
 						scaleY = data.imageHeight / data.naturalHeight;
 
-					data.$positioner.css( _prefix("transform", "translate3d("+data.positionerLeft+"px, "+data.positionerTop+"px, 0)") );
-					data.$holder.css( _prefix("transform", "translate3d(-50%, -50%, 0) scale("+scaleX+","+scaleY+")") );
+					// Fix invalid values
+					if (isNaN(scaleX) || scaleX < 0 || scaleX === Infinity) {
+						scaleX = 1;
+					}
+					if (isNaN(scaleY) || scaleY < 0 || scaleY === Infinity) {
+						scaleY = 1;
+					}
+
+					data.$positioner.css(_prefix("transform", "translate3d(" + data.positionerLeft + "px, " + data.positionerTop + "px, 0)"));
+					data.$holder.css(_prefix("transform", "translate3d(-50%, -50%, 0) scale(" + scaleX + "," + scaleY + ")"));
 				} else {
 					data.$positioner.css({
 						left: data.positionerLeft,
