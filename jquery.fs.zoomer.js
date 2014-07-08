@@ -255,7 +255,14 @@
 					data.centerLeft  = Math.round(data.frameWidth * 0.5);
 					data.centerTop   = Math.round(data.frameHeight * 0.5);
 
-					data = _setMinimums(data);
+                    // Set minHeight and minWidth to naturals sizes
+                    data.minHeight = data.naturalHeight;
+                    data.minWidth  = data.naturalWidth;
+
+                    // Recalculate minimum sizes only when the natural size of the image is bigger than the frame size - marginalReal
+                    if (data.naturalHeight > (data.frameHeight - data.marginReal) || data.naturalWidth > (data.frameWidth - data.marginReal)) {
+                        data = _setMinimums(data);
+                    }
 				}
 			});
 		},
@@ -510,6 +517,10 @@
 		data.targetImageHeight = data.naturalHeight;
 		data.targetImageWidth  = data.naturalWidth;
 
+        // Set minHeight and minWidth to naturals sizes
+        data.minHeight = data.naturalHeight;
+        data.minWidth  = data.naturalWidth;
+
 		data.maxHeight = data.naturalHeight;
 		data.maxWidth  = data.naturalWidth;
 
@@ -654,14 +665,6 @@
 				if (transformSupported) {
 					var scaleX = data.imageWidth / data.naturalWidth,
 						scaleY = data.imageHeight / data.naturalHeight;
-
-					// Fix invalid values
-					if (isNaN(scaleX) || scaleX < 0 || scaleX === Infinity) {
-						scaleX = 1;
-					}
-					if (isNaN(scaleY) || scaleY < 0 || scaleY === Infinity) {
-						scaleY = 1;
-					}
 
 					data.$positioner.css(_prefix("transform", "translate3d(" + data.positionerLeft + "px, " + data.positionerTop + "px, 0)"));
 					data.$holder.css(_prefix("transform", "translate3d(-50%, -50%, 0) scale(" + scaleX + "," + scaleY + ")"));
