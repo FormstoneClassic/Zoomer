@@ -29,6 +29,7 @@
 			zoomIn: null,
 			zoomOut: null,
 			next: null,
+			rotate: null,
 			previous: null
 		},
 		customClass: "",
@@ -115,6 +116,9 @@
 		offset: null,
 		touches: [],
 		zoomPercentage: 1,
+		
+		rAngle: 90,
+		rotatePos: 0,
 
 		pinchStartX0: 0,
 		pinchStartX1: 0,
@@ -172,6 +176,7 @@
 					data.controls.$zoomOut.off(".zoomer");
 					data.controls.$next.off(".zoomer");
 					data.controls.$previous.off(".zoomer");
+					data.controls.$rotate.off(".zoomer");
 
 					data.$target.removeClass("zoomer-element")
 								.data("zoomer", null)
@@ -338,16 +343,18 @@
 			data.$target.addClass("zoomer-element")
 						.html(data.$zoomer);
 
-			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous) {
+			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous || data.controls.rotate) {
 				data.controls.$zoomIn = $(data.controls.zoomIn);
 				data.controls.$zoomOut = $(data.controls.zoomOut);
 				data.controls.$next = $(data.controls.next);
 				data.controls.$previous = $(data.controls.previous);
+				data.controls.$rotate = $(data.controls.rotate);
 			} else {
 				html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
 				html += '<span class="zoomer-previous">&lsaquo;</span>';
 				html += '<span class="zoomer-zoom-out">-</span>';
 				html += '<span class="zoomer-zoom-in">+</span>';
+				html += '<span class="zoomer-zoom-rotate">&#8631</span>';				
 				html += '<span class="zoomer-next">&rsaquo;</span>';
 				html += '</div>';
 
@@ -358,6 +365,7 @@
 				data.controls.$zoomOut = data.$zoomer.find(".zoomer-zoom-out");
 				data.controls.$next = data.$zoomer.find(".zoomer-next");
 				data.controls.$previous = data.$zoomer.find(".zoomer-previous");
+				data.controls.$rotate = data.$zoomer.find(".zoomer-zoom-rotate");
 			}
 
 			// Cache jquery objects
@@ -371,6 +379,8 @@
 									.on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
 			data.controls.$next.on("click.zoomer", data, _nextImage);
 			data.controls.$previous.on("click.zoomer", data, _previousImage);
+			data.controls.$rotate.on("click.zoomer", data, _rotateImage);
+			
 			data.$zoomer.on("mousedown.zoomer", data, _dragStart)
 						.on("touchstart.zoomer MSPointerDown.zoomer", ":not(.zoomer-controls)", data, _onTouch);
 
@@ -849,6 +859,24 @@
 		data.keyDownTime = 1;
 		data.action = "zoom_out";
 	}
+	
+	/**
+	 * @method private
+	 * @name _rotateImage
+	 * @description Handles rotates button click
+	 * @param e [object] "Event Data"
+	 */
+	function _rotateImage(e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		var data = e.data;
+		data = _AnimateRotate(data);
+		data.keyDownTime = 1;
+		data.action = "";
+	}	
+
+
 
 	/**
 	 * @method private
@@ -884,6 +912,30 @@
 
 		return data;
 	}
+	
+	/**
+	 * @method private
+	 * @name _AnimateRotate
+	 * @description Sets rotate position
+	 * @param data [object] "Instance Data"
+	 */
+	
+	function _AnimateRotate(data){
+		
+	   $({deg: data.rotatePos}).animate({deg: data.rAngle}, {
+		step: function(now, fx){
+		    $(".zoomer-image").css({
+			 transform: "rotate(" + now + "deg)"
+		    });
+		}
+	    });
+	   
+	    data.rotatePos = data.rotatePos + 90;
+	    data.rAngle = data.rAngle + 90;
+	    
+	    return data;
+	}
+
 
 	/**
 	 * @method private
