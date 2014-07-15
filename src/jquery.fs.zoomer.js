@@ -804,7 +804,7 @@
 	 */
 	function _nextImage(e) {
 		var data = e.data;
-
+		data = _clearAnimateRotate(data);
 		if (!data.loading && data.index+1 < data.images.length) {
 			data.index++;
 			_load.apply(data.$target, [ data ]);
@@ -819,7 +819,7 @@
 	 */
 	function _previousImage(e) {
 		var data = e.data;
-
+		data = _clearAnimateRotate(data);
 		if (!data.loading && data.index-1 >= 0) {
 			data.index--;
 			_load.apply(data.$target, [ data ]);
@@ -890,6 +890,7 @@
 
 		var data = e.data;
 		data = _clearZoomPosition(data);
+		
 
 		data.keyDownTime = 0;
 		data.action = "";
@@ -924,8 +925,11 @@
 		
 	   $({deg: data.rotatePos}).animate({deg: data.rAngle}, {
 		step: function(now, fx){
-		    $(".zoomer-image").css({
-			 transform: "rotate(" + now + "deg)"
+		    $(".zoomer-image").css({			 
+				'-webkit-transform' : 'rotate(' + now + 'deg)',
+				'-moz-transform' : 'rotate(' + now + 'deg)',
+				'-ms-transform' : 'rotate(' + now + 'deg)',
+				'transform' : 'rotate(' + now + 'deg)'
 		    });
 		}
 	    });
@@ -934,6 +938,13 @@
 	    data.rAngle = data.rAngle + 90;
 	    
 	    return data;
+	}
+	
+	function _clearAnimateRotate(data){
+		 data.rotatePos = 0;
+		 data.rAngle = 90;
+		 
+		 return data;
 	}
 
 
