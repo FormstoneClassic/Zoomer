@@ -1,5 +1,5 @@
 /* 
- * Zoomer v3.0.11 - 2014-07-08 
+ * Zoomer v3.0.12 - 2014-07-28 
  * A jQuery plugin for smooth image exploration. Part of the formstone library. 
  * http://formstone.it/components/zoomer/ 
  * 
@@ -1241,16 +1241,39 @@
 	 */
 	function _getTransform3DSupport() {
 		/* http://stackoverflow.com/questions/11628390/how-to-detect-css-translate3d-without-the-webkit-context */
+		/*
 		var prop = "transform",
 			val = "translate3d(0px, 0px, 0px)",
 			test = /translate3d\(0px, 0px, 0px\)/g,
 			$div = $("<div>");
 
 		$div.css(_prefix(prop, val));
-
 		var check = $div[0].style.cssText.match(test);
 
-		return (check !== null && check.length === 1);
+		return (check !== null && check.length > 0);
+		*/
+
+		/* http://stackoverflow.com/questions/5661671/detecting-transform-translate3d-support/12621264#12621264 */
+		var el = document.createElement('p'),
+			has3d,
+			transforms = {
+				'webkitTransform':'-webkit-transform',
+				'OTransform':'-o-transform',
+				'msTransform':'-ms-transform',
+				'MozTransform':'-moz-transform',
+				'transform':'transform'
+			};
+
+		document.body.insertBefore(el, null);
+		for (var t in transforms) {
+			if (el.style[t] !== undefined) {
+				el.style[t] = "translate3d(1px,1px,1px)";
+				has3d = window.getComputedStyle(el).getPropertyValue(transforms[t]);
+			}
+		}
+		document.body.removeChild(el);
+
+		return (has3d !== undefined && has3d.length > 0 && has3d !== "none");
 	}
 
 	$.fn.zoomer = function(method) {
