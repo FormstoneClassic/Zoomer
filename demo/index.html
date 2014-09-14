@@ -6,8 +6,6 @@
 
 		<title>Zoomer Demo</title>
 
-		<link href="http://fonts.googleapis.com/css?family=Lato:300,400,900" rel="stylesheet" type="text/css" media="all">
-		<link href="http://fonts.googleapis.com/css?family=PT+Mono" rel="stylesheet" type="text/css">
 		<link href="http://formstone.it/css/demo.css" rel="stylesheet" type="text/css" media="all">
 
 		<!--[if LTE IE 8]>
@@ -17,23 +15,25 @@
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		<script src="http://formstone.it/js/demo.js"></script>
 
-		<script src="ie/jquery.fs.zoetrope.min.js"></script>
-
 		<link href="../jquery.fs.zoomer.css" rel="stylesheet" type="text/css" media="all">
 		<script src="../jquery.fs.zoomer.js"></script>
 
-		<style>
-			.zoomer_wrapper { border: 1px solid #ddd; border-radius: 3px; height: 500px; margin: 10px 0; overflow: hidden; width: 100%; }
+		<!--[DEMO:START-RESOURCES]-->
 
-			.zoomer.dark_zoomer { background: #333 url(http://formstone.it/files/demo/zoomer-bg-dark.png) repeat center; }
-			.zoomer.dark_zoomer img { box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); }
+		<script src="ie/jquery.fs.zoetrope.min.js"></script>
+
+		<style>
+			.demo .zoomer_wrapper { border: 1px solid #ddd; border-radius: 3px; height: 500px; margin: 10px 0; overflow: hidden; width: 100%; }
+
+			.demo .zoomer.dark_zoomer { background: #333 url(http://formstone.it/files/demo/zoomer-bg-dark.png) repeat center; }
+			.demo .zoomer.dark_zoomer img { box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); }
 		</style>
 
 		<script>
 			$(document).ready(function() {
-				$(".zoomer_basic").zoomer();
+				$(".demo .zoomer_basic").zoomer();
 
-				$(".zoomer_custom").zoomer({
+				$(".demo .zoomer_custom").zoomer({
 					controls: {
 						zoomIn: ".zoomer_custom_zoom_in",
 						zoomOut: ".zoomer_custom_zoom_out"
@@ -44,9 +44,9 @@
 					marginMax: 50
 				});
 
-				$(".load_zoomer_tiled").one("click", function() {
+				$(".demo .load_zoomer_tiled").one("click", function() {
 					$(this).after('<div class="zoomer_wrapper zoomer_tiled"></div>').remove();
-					$(".zoomer_tiled").zoomer({
+					$(".demo .zoomer_tiled").zoomer({
 						source:{
 							thumbnail: "http://formstone.it/files/demo/space-tiled/tiled_thumbnail.jpg",
 							tiles: [
@@ -59,10 +59,20 @@
 				});
 
 				$(window).on("resize", function(e) {
-					$(".zoomer_wrapper").zoomer("resize");
+					$(".demo .zoomer_wrapper").zoomer("resize");
+				});
+
+				$(window).one("pronto.load", function() {
+					$(".demo .zoomer_basic").zoomer("destroy");
+					$(".demo .zoomer_custom").zoomer("destroy");
+					$(".demo .zoomer_tiled").zoomer("destroy");
+					$(".demo .load_zoomer_tiled").off("click");
 				});
 			});
 		</script>
+
+		<!--[DEMO:END-RESOURCES]-->
+
 	</head>
 	<body class="gridlock demo">
 		<header id="header">
@@ -79,6 +89,8 @@
 					<br>
 					<a href="http://formstone.it/zoomer/" class="button">View Documentation</a>
 				</header>
+
+				<!--[DEMO:START-CONTENT]-->
 
 				<!-- Basic -->
 				<h2>Basic</h2>
@@ -166,6 +178,8 @@
 				<div class="clear_fix">
 					<span class="button small inline load_zoomer_tiled">Load Demo</span>
 				</div>
+
+				<!--[DEMO:END-CONTENT]-->
 
 			</div>
 		</article>

@@ -1,5 +1,5 @@
 /* 
- * Zoomer v3.0.12 - 2014-07-28 
+ * Zoomer v3.0.13 - 2014-09-14 
  * A jQuery plugin for smooth image exploration. Part of the formstone library. 
  * http://formstone.it/components/zoomer/ 
  * 
@@ -1079,7 +1079,7 @@
 			data.action = "drag";
 
 			data.targetPositionerLeft -= (data.mouseX - data.touches[0].pageX);
-			data.targetPositionerTop	-= (data.mouseY - data.touches[0].pageY);
+			data.targetPositionerTop  -= (data.mouseY - data.touches[0].pageY);
 		} else if (data.touches.length >= 2) {
 			data.action = "pinch";
 

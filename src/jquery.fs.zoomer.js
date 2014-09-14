@@ -1071,7 +1071,7 @@
 			data.action = "drag";
 
 			data.targetPositionerLeft -= (data.mouseX - data.touches[0].pageX);
-			data.targetPositionerTop	-= (data.mouseY - data.touches[0].pageY);
+			data.targetPositionerTop  -= (data.mouseY - data.touches[0].pageY);
 		} else if (data.touches.length >= 2) {
 			data.action = "pinch";
 

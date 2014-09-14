@@ -1,6 +1,6 @@
 {
   "name": "zoomer",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "title": "Zoomer",
   "author": {
     "name": "Ben Plum",
@@ -25,12 +25,11 @@
     "ui",
     "javascript",
     "jquery",
-    "formstone",
-    "benplum"
+    "formstone"
   ],
   "docs": "http://formstone.it/components/zoomer/",
   "demo": "http://formstone.it/components/zoomer/",
-  "download": "https://github.com/benplum/Zoomer",
-  "bugs": "https://github.com/benplum/Zoomer/issues",
+  "download": "https://github.com/Formstone/Zoomer",
+  "bugs": "https://github.com/Formstone/Zoomer/issues",
   "homepage": "http://formstone.it/components/zoomer/"
 }
