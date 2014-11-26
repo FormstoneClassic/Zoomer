@@ -4,7 +4,7 @@
  * http://formstone.it/components/zoomer/ 
  * 
  * Copyright 2014 Ben Plum; MIT Licensed 
- */ 
+ */
 
 ;(function ($, window) {
 	"use strict";
@@ -20,6 +20,7 @@
 	 * @param controls.postion [string] <"bottom"> "Position of default controls"
 	 * @param controls.zoomIn [string] <> "Custom zoom control selecter"
 	 * @param controls.zoomOut [string] <> "Custom zoom control selecter"
+	 * @param controls.page [string] <> "Custom pagination control selecter"
 	 * @param controls.next [string] <> "Custom pagination control selecter"
 	 * @param controls.previous [string] <> "Custom pagination control selecter"
 	 * @param customClass [string] <''> "Class applied to instance"
@@ -36,6 +37,7 @@
 			position: "bottom",
 			zoomIn: null,
 			zoomOut: null,
+			page: null,
 			next: null,
 			previous: null
 		},
@@ -182,9 +184,9 @@
 					data.controls.$previous.off(".zoomer");
 
 					data.$target.removeClass("zoomer-element")
-								.data("zoomer", null)
-								.empty()
-								.append(data.originalDOM);
+						.data("zoomer", null)
+						.empty()
+						.append(data.originalDOM);
 				}
 			});
 
@@ -255,14 +257,14 @@
 					data.centerLeft	= Math.round(data.frameWidth * 0.5);
 					data.centerTop	 = Math.round(data.frameHeight * 0.5);
 
-										// Set minHeight and minWidth to naturals sizes
-										data.minHeight = data.naturalHeight;
-										data.minWidth	= data.naturalWidth;
+					// Set minHeight and minWidth to naturals sizes
+					data.minHeight = data.naturalHeight;
+					data.minWidth	= data.naturalWidth;
 
-										// Recalculate minimum sizes only when the natural size of the image is bigger than the frame size - marginalReal
-										if (data.naturalHeight > (data.frameHeight - data.marginReal) || data.naturalWidth > (data.frameWidth - data.marginReal)) {
-												data = _setMinimums(data);
-										}
+					// Recalculate minimum sizes only when the natural size of the image is bigger than the frame size - marginalReal
+					if (data.naturalHeight > (data.frameHeight - data.marginReal) || data.naturalWidth > (data.frameWidth - data.marginReal)) {
+						data = _setMinimums(data);
+					}
 				}
 			});
 		},
@@ -344,17 +346,19 @@
 
 			data.$zoomer = $(html);
 			data.$target.addClass("zoomer-element")
-						.html(data.$zoomer);
+				.html(data.$zoomer);
 
-			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous) {
+			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous || data.controls.page) {
 				data.controls.$zoomIn = $(data.controls.zoomIn);
 				data.controls.$zoomOut = $(data.controls.zoomOut);
+				data.controls.$page = $(data.controls.page);
 				data.controls.$next = $(data.controls.next);
 				data.controls.$previous = $(data.controls.previous);
 			} else {
 				html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
 				html += '<span class="zoomer-previous">&lsaquo;</span>';
 				html += '<span class="zoomer-zoom-out">-</span>';
+				html += '<span class="zoomer-page"><input type="text" name="zoomer-page" value="1" maxlength="3"/></span>';
 				html += '<span class="zoomer-zoom-in">+</span>';
 				html += '<span class="zoomer-next">&rsaquo;</span>';
 				html += '</div>';
@@ -364,6 +368,7 @@
 				data.controls.$default = data.$zoomer.find(".zoomer-controls");
 				data.controls.$zoomIn = data.$zoomer.find(".zoomer-zoom-in");
 				data.controls.$zoomOut = data.$zoomer.find(".zoomer-zoom-out");
+				data.controls.$page = data.$zoomer.find(".zoomer-page input");
 				data.controls.$next = data.$zoomer.find(".zoomer-next");
 				data.controls.$previous = data.$zoomer.find(".zoomer-previous");
 			}
@@ -374,13 +379,14 @@
 
 			// Bind events
 			data.controls.$zoomIn.on("touchstart.zoomer mousedown.zoomer", data, _zoomIn)
-								 .on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
+				.on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
 			data.controls.$zoomOut.on("touchstart.zoomer mousedown.zoomer", data, _zoomOut)
-									.on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
+				.on("touchend.zoomer mouseup.zoomer", data, _clearZoom);
+			data.controls.$page.on("keyup", data, _findPage);
 			data.controls.$next.on("click.zoomer", data, _nextImage);
 			data.controls.$previous.on("click.zoomer", data, _previousImage);
 			data.$zoomer.on("mousedown.zoomer", data, _dragStart)
-						.on("touchstart.zoomer MSPointerDown.zoomer", ":not(.zoomer-controls)", data, _onTouch);
+				.on("touchstart.zoomer MSPointerDown.zoomer", ":not(.zoomer-controls)", data, _onTouch);
 
 			// Kick it off
 			data.$target.data("zoomer", data);
@@ -405,7 +411,6 @@
 		} else {
 			data.$zoomer.removeClass("zoomer-gallery");
 		}
-
 		if (typeof data.$image !== "undefined") {
 			data.$holder.animate({ opacity: 0 }, 300, function() {
 				pub.unload.apply(data.$target);
@@ -414,6 +419,7 @@
 		} else {
 			_loadImage.apply(data.$target, [ data, data.images[data.index] ]);
 		}
+		_setPage(data);
 	}
 
 	/**
@@ -457,7 +463,7 @@
 			// Cache current image
 			data.$image = $('<img class="zoomer-image" />');
 			data.$image.one("load.zoomer", data, _onImageLoad)
-						 .attr("src", source);
+				.attr("src", source);
 
 			// If image has already loaded into cache, trigger load event
 			if (data.$image[0].complete) {
@@ -678,7 +684,7 @@
 				// Run callback function
 				if (data.callback) {
 					data.callback.apply(data.$zoomer, [
-						(data.imageWidth - data.minWidth) / (data.maxWidth - data.minWidth)
+							(data.imageWidth - data.minWidth) / (data.maxWidth - data.minWidth)
 					]);
 				}
 			}
@@ -792,6 +798,54 @@
 		data.oldImageHeight = data.imageHeight;
 
 		return data;
+	}
+
+	/**
+	 * @method private
+	 * @name _findPage
+	 * @description Handles page input change
+	 * @param e [object] "Event Data"
+	 */
+	function _findPage(e) {
+		var data = e.data;
+		if(data && data.controls && data.controls.$page){
+			var page_input = jQuery(data.controls.$page).get(0);
+			var page_val = jQuery(page_input).val();
+			if(parseInt(page_val) >= 1){
+				_moveToIndex(e, (page_val - 1));
+			}
+		}
+	}
+
+	/**
+	 * @method private
+	 * @name _moveToIndex
+	 * @description Handles the move to image with index i
+	 * @param e [object] "Event Data"
+	 * @param i [integer] "Image Index"
+	 */
+	function _moveToIndex(e, i) {
+		var data = e.data;
+
+		if (!data.loading && i < data.images.length) {
+			data.index = i;
+			_load.apply(data.$target, [ data ]);
+		}
+	}
+
+	/**
+	 * @method private
+	 * @name _moveToIndex
+	 * @description Handles the move to image with index i
+	 * @param e [object] "Event Data"
+	 * @param i [integer] "Image Index"
+	 */
+	function _setPage(data, i) {
+		if(data && data.controls && data.controls.$page){
+			var page_input = jQuery(data.controls.$page).get(0);
+			jQuery(page_input).val(data.index+1);
+			jQuery(page_input).blur();
+		}
 	}
 
 	/**
@@ -913,22 +967,24 @@
 	 * @param e [object] "Event Data"
 	 */
 	function _dragStart(e) {
-		if (e.preventDefault) {
-			e.preventDefault();
-			e.stopPropagation();
-		}
-
 		var data = e.data;
-		data.action = "drag";
+		if(e.target != jQuery(data.controls.$page).get(0)){
+			if (e.preventDefault) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
 
-		data.mouseX = e.pageX;
-		data.mouseY = e.pageY;
+			data.action = "drag";
 
-		data.targetPositionerLeft = data.positionerLeft;
-		data.targetPositionerTop = data.positionerTop;
+			data.mouseX = e.pageX;
+			data.mouseY = e.pageY;
 
-		$window.on("mousemove.zoomer", data, _onDrag)
-				 .on("mouseup.zoomer", data, _dragStop);
+			data.targetPositionerLeft = data.positionerLeft;
+			data.targetPositionerTop = data.positionerTop;
+
+			$window.on("mousemove.zoomer", data, _onDrag)
+				.on("mouseup.zoomer", data, _dragStop);
+		}
 	}
 
 	/**
@@ -1039,7 +1095,7 @@
 		if (!data.touchEventsBound) {
 			data.touchEventsBound = true;
 			$window.on("touchmove.zoomer MSPointerMove.zoomer", data, _onTouch)
-					 .on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
+				.on("touchend.zoomer MSPointerUp.zoomer", data, _onTouch);
 		}
 
 		data.zoomPercentage = 1;
@@ -1111,9 +1167,9 @@
 
 		data.mouseX = data.touches[0].pageX;
 		data.mouseY = data.touches[0].pageY;
-		}
+	}
 
-	 /**
+	/**
 	 * @method private
 	 * @name _onTouchEnd
 	 * @description Handles touch end
@@ -1142,14 +1198,14 @@
 
 		// Clear touch events
 		/* if (data.touches.length <= 1) { */
-			$window.off(".zoomer");
-			data.touchEventsBound = false;
+		$window.off(".zoomer");
+		data.touchEventsBound = false;
 		/*
-		} else {
-			data.mouseX = data.touches[0].pageX;
-			data.mouseY = data.touches[0].pageY;
-		}
-		*/
+		 } else {
+		 data.mouseX = data.touches[0].pageX;
+		 data.mouseY = data.touches[0].pageY;
+		 }
+		 */
 	}
 
 	/**
@@ -1242,16 +1298,16 @@
 	function _getTransform3DSupport() {
 		/* http://stackoverflow.com/questions/11628390/how-to-detect-css-translate3d-without-the-webkit-context */
 		/*
-		var prop = "transform",
-			val = "translate3d(0px, 0px, 0px)",
-			test = /translate3d\(0px, 0px, 0px\)/g,
-			$div = $("<div>");
+		 var prop = "transform",
+		 val = "translate3d(0px, 0px, 0px)",
+		 test = /translate3d\(0px, 0px, 0px\)/g,
+		 $div = $("<div>");
 
-		$div.css(_prefix(prop, val));
-		var check = $div[0].style.cssText.match(test);
+		 $div.css(_prefix(prop, val));
+		 var check = $div[0].style.cssText.match(test);
 
-		return (check !== null && check.length > 0);
-		*/
+		 return (check !== null && check.length > 0);
+		 */
 
 		/* http://stackoverflow.com/questions/5661671/detecting-transform-translate3d-support/12621264#12621264 */
 		var el = document.createElement('p'),
