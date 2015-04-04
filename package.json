@@ -16,10 +16,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Formstone/Zoomer"
+    "url": "https://github.com/FormstoneClassic/Zoomer"
   },
-  "homepage": "http://formstone.it/components/zoomer/",
-  "demo": "http://formstone.it/components/Zoomer/demo/index.html",
+  "homepage": "http://classic.formstone.it/components/zoomer/",
+  "demo": "http://classic.formstone.it/components/Zoomer/demo/index.html",
   "license": "MIT",
   "author": {
     "name": "Ben Plum",

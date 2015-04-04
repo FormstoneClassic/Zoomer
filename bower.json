@@ -8,7 +8,7 @@
     "url": "http://www.benplum.com"
   },
   "license": "MIT",
-  "homepage": "http://formstone.it/components/zoomer/",
+  "homepage": "http://classic.formstone.it/components/zoomer/",
   "main": [
     "jquery.fs.zoomer.js",
     "jquery.fs.zoomer.css"

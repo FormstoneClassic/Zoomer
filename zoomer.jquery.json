@@ -27,9 +27,9 @@
     "jquery",
     "formstone"
   ],
-  "docs": "http://formstone.it/components/zoomer/",
-  "demo": "http://formstone.it/components/zoomer/",
-  "download": "https://github.com/Formstone/Zoomer",
-  "bugs": "https://github.com/Formstone/Zoomer/issues",
-  "homepage": "http://formstone.it/components/zoomer/"
+  "docs": "http://classic.formstone.it/components/zoomer/",
+  "demo": "http://classic.formstone.it/components/zoomer/",
+  "download": "https://github.com/FormstoneClassic/Zoomer",
+  "bugs": "https://github.com/FormstoneClassic/Zoomer/issues",
+  "homepage": "http://classic.formstone.it/components/zoomer/"
 }

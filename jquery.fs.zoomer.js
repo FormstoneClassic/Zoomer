@@ -1,9 +1,9 @@
 /* 
- * Zoomer v3.0.13 - 2014-09-14 
+ * Zoomer v3.0.13 - 2015-04-04 
  * A jQuery plugin for smooth image exploration. Part of the formstone library. 
- * http://formstone.it/components/zoomer/ 
+ * http://classic.formstone.it/components/zoomer/ 
  * 
- * Copyright 2014 Ben Plum; MIT Licensed 
+ * Copyright 2015 Ben Plum; MIT Licensed 
  */ 
 
 ;(function ($, window) {
@@ -159,7 +159,7 @@
 		 */
 		defaults: function(opts) {
 			options = $.extend(options, opts || {});
-			return $(this);
+			return (typeof this === 'object') ? $(this) : true;
 		},
 
 		/**
