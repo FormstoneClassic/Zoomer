@@ -10,10 +10,10 @@
 	 * @options
 	 * @param callback [function] <$.noop> ""
 	 * @param controls.postion [string] <"bottom"> "Position of default controls"
-	 * @param controls.zoomIn [string] <> "Custom zoom control selecter"
-	 * @param controls.zoomOut [string] <> "Custom zoom control selecter"
-	 * @param controls.next [string] <> "Custom pagination control selecter"
-	 * @param controls.previous [string] <> "Custom pagination control selecter"
+	 * @param controls.zoomIn [string] <> "Custom zoom control selector"
+	 * @param controls.zoomOut [string] <> "Custom zoom control selector"
+	 * @param controls.next [string] <> "Custom pagination control selector"
+	 * @param controls.previous [string] <> "Custom pagination control selector"
 	 * @param customClass [string] <''> "Class applied to instance"
 	 * @param enertia [number] <0.2> "Zoom smoothing (0.1 = butter, 0.9 = sandpaper)"
 	 * @param increment [number] <0.01> "Zoom speed (0.01 = tortoise, 0.1 = hare)"
@@ -312,6 +312,7 @@
 		if (!$target.data("zoomer")) {
 			data = $.extend({}, data, $target.data("zoomer-options"));
 
+			var $targetParent = $target.parent(); // have to get the parent before we empty the target below
 			data.$target = $target;
 
 			data.marginReal = data.marginMin * 2;
@@ -339,10 +340,10 @@
 						.html(data.$zoomer);
 
 			if (data.controls.zoomIn || data.controls.zoomOut || data.controls.next || data.controls.previous) {
-				data.controls.$zoomIn = $(data.controls.zoomIn);
-				data.controls.$zoomOut = $(data.controls.zoomOut);
-				data.controls.$next = $(data.controls.next);
-				data.controls.$previous = $(data.controls.previous);
+ 				data.controls.$zoomIn = $(data.controls.zoomIn, $targetParent);
+				data.controls.$zoomOut = $(data.controls.zoomOut, $targetParent);
+				data.controls.$next = $(data.controls.next, $targetParent);
+				data.controls.$previous = $(data.controls.previous, $targetParent);
 			} else {
 				html = '<div class="zoomer-controls zoomer-controls-' + data.controls.position + '">';
 				html += '<span class="zoomer-previous">&lsaquo;</span>';
