@@ -1,12 +1,19 @@
 {
   "name": "Zoomer",
-  "version": "3.0.13",
+  "version": "3.1.0",
   "description": "A jQuery plugin for smooth image exploration. Part of the formstone library.",
-  "author": {
-    "name": "Ben Plum",
-    "email": "mr@benplum.com",
-    "url": "http://www.benplum.com"
-  },
+  "authors": [
+    {
+      "name": "Ben Plum",
+      "email": "mr@benplum.com",
+      "homepage": "http://www.benplum.com"
+    },
+    {
+      "name": "Marc Brooks",
+      "email": "IDisposable@gmail.com",
+      "homepage": "https://github.com/IDisposable"
+    }
+  ],
   "license": "MIT",
   "homepage": "http://classic.formstone.it/components/zoomer/",
   "main": [

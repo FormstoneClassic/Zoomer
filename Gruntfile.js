@@ -113,7 +113,11 @@ module.exports = function(grunt) {
 					   '- [Demo](' + pkg.demo + ') \n' +
 					   '- [Documentation](' + pkg.homepage + ') \n\n' +
 					   '#### Bower Support \n' +
-					   '`bower install ' + pkg.name + '`';
+					   '`bower install ' + pkg.name + '` \n\n' +
+					   '#### Forked by Marc Brooks <IDisposable@gmail.com> for 3.1.0 \n' +
+                       '- Allow multiple intances of zoomers on the same page while using custom UI control selectors. \n' +
+                       '- Use a div around your zoomer container that scopes the custom controls \n' +
+                       '- Potentially breaking change if the controls were not shared by the parent previously.';
 
 		grunt.file.write(destination, markdown);
 		grunt.log.writeln('File "' + destination + '" created.');

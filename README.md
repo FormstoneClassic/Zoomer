@@ -10,3 +10,8 @@ A jQuery plugin for smooth image exploration. Part of the formstone library.
 
 #### Bower Support 
 `bower install Zoomer`
+
+#### Forked by Marc Brooks for 3.1.0
+- Allow multiple intances of zoomers on the same page while using custom UI control selectors.
+- Use a div around your zoomer container that scopes the custom controls
+- Potentially breaking change if the controls were not shared by the parent previously.

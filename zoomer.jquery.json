@@ -1,12 +1,19 @@
 {
   "name": "zoomer",
-  "version": "3.0.13",
+  "version": "3.1.0",
   "title": "Zoomer",
   "author": {
     "name": "Ben Plum",
     "email": "mr@benplum.com",
     "url": "http://www.benplum.com"
   },
+  "maintainers": [
+    {
+      "name": "Marc Brooks",
+      "email": "IDisposable@gmail.com",
+      "url": "https://github.com/IDisposable"
+    }
+  ],
   "licenses": [
     {
       "type": "MIT",

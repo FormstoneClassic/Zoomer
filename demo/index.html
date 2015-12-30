@@ -145,15 +145,44 @@
     &lt;img src="/path/to/image.jpg"&gt;
 &lt;/div&gt;</code></pre>
 
-				<h5>Demo</h5>
-				<div class="zoomer_wrapper zoomer_custom">
-				  <img src="http://formstone.it/files/demo/space.jpg">
-				</div>
-				<div class="clear_fix">
-					<span class="button small inline zoomer_custom_zoom_in">In</span>
-					<span class="button small inline zoomer_custom_zoom_out">Out</span>
-				</div>
+				<h5>Implicitly Linked</h5>
+                <div class="zoomer_wrapper zoomer_custom">
+                <img src="http://formstone.it/files/demo/space.jpg">
+                </div>
+                <div class="clear_fix">
+                    <span class="button small inline zoomer_custom_zoom_in">In</span>
+                    <span class="button small inline zoomer_custom_zoom_out">Out</span>
+                </div>                 
 
+                <div class="zoomer_wrapper zoomer_custom">
+                <img src="http://formstone.it/files/demo/space.jpg">
+                </div>
+                <div class="clear_fix">
+                    <span class="button small inline zoomer_custom_zoom_in">Down</span>
+                    <span class="button small inline zoomer_custom_zoom_out">Up</span>
+                </div>
+				<br>
+
+				<h5>Unlinked</h5>
+                <div>
+                    <div class="zoomer_wrapper zoomer_custom">
+                    <img src="http://formstone.it/files/demo/space.jpg">
+                    </div>
+                    <div class="clear_fix">
+                        <span class="button small inline zoomer_custom_zoom_in">In</span>
+                        <span class="button small inline zoomer_custom_zoom_out">Out</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="zoomer_wrapper zoomer_custom">
+                    <img src="http://formstone.it/files/demo/space.jpg">
+                    </div>
+                    <div class="clear_fix">
+                        <span class="button small inline zoomer_custom_zoom_in">Down</span>
+                        <span class="button small inline zoomer_custom_zoom_out">Up</span>
+                    </div>
+                </div>
 				<br>
 
 				<!-- TILED -->
@@ -164,7 +193,7 @@
     source: {
         thumbnail: "images/thumbnail.jpg",
         tiles: [
-			["images/01-01.jpg", "images/01-02.jpg", "images/01-03.jpg"],
+            ["images/01-01.jpg", "images/01-02.jpg", "images/01-03.jpg"],
             ["images/02-01.jpg", "images/02-02.jpg", "images/02-03.jpg"],
             ["images/03-01.jpg", "images/03-02.jpg", "images/03-03.jpg"]
         ]
